@@ -86,28 +86,64 @@ Berdasarkan latar belakang tersebut, tugas ini bertujuan untuk:
 \section{Analisis Kebutuhan Bisnis}
 \subsection{Stakeholder Bisnis}
 
-Analisis kebutuhan bisnis difokuskan pada tiga fungsi manajemen yang akan menjadi
-pengguna utama data mart, yaitu:
-\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt,
-    parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
-    \item \textit{VP of Operations}, bertanggung jawab atas ketepatan jadwal
-    keberangkatan dan kedatangan armada bus. Data yang dibutuhkan berkaitan dengan
-    hambatan operasional di terminal, rasio \textit{missed connection} akibat
-    keterlambatan, serta kinerja rute dan armada dalam memenuhi target ketepatan
-    waktu atau \textit{Service Level Agreement} (SLA).
-    \item \textit{VP of Commercial and Revenue Management}, bertanggung jawab atas
-    pendapatan dan profitabilitas perusahaan. Analisis yang dibutuhkan meliputi
-    pendapatan tiket, tingkat keterisian kursi (\textit{load factor}) per rute,
-    efektivitas diskon, serta potensi kehilangan pendapatan akibat pengembalian dana,
-    pemesanan ulang, dan biaya kompensasi.
-    \item \textit{Head of Customer Loyalty}, bertanggung jawab atas program
-    loyalitas dan retensi penumpang. Data mart digunakan untuk melihat perubahan
-    tingkat loyalitas, pola perolehan dan penukaran poin, tingkat pemesanan kembali,
-    serta hubungan antara gangguan perjalanan yang dialami penumpang dengan retensi
-    mereka.
+Analisis kebutuhan bisnis difokuskan pada tiga fungsi manajemen yang akan menjadi pengguna utama data mart yang akan dibangun:
+\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
+    \item \en{VP of Operations} – bertanggung jawab atas ketepatan jadwal keberangkatan dan kedatangan armada bus. \en{Stakeholder} ini membutuhkan visibilitas mengenai \en{bottleneck} di terminal, rasio \en{missed connection} akibat keterlambatan, serta kinerja rute dan armada spesifik dalam memenuhi \en{Service Level Agreement} (SLA) ketepatan waktu.
+    \item \en{VP of Commercial and Revenue Management} – bertanggung jawab atas profitabilitas perusahaan. \en{Stakeholder} ini berfokus pada pemantauan pendapatan tiket, \en{load factor} (keterisian kursi) per rute, efektivitas pemberian diskon, serta kuantifikasi \en{revenue leakage} yang diakibatkan oleh \en{refund}, \en{rebooking}, atau denda kompensasi operasional.
+    \item \en{Head of Customer Loyalty} – bertanggung jawab atas retensi pelanggan jangka panjang. \en{Stakeholder} ini membutuhkan analisis terkait dinamika perubahan \en{loyalty tier}, pola perolehan dan penukaran poin, tingkat \en{repeat booking}, serta ingin melihat apakah terdapat asosiasi atau korelasi negatif antara gangguan perjalanan yang dialami pelanggan dengan tingkat retensi mereka.
 \end{enumerate}
 
+Ketiga \en{stakeholder} ini dipilih karena saling melengkapi: pihak Operasional berfokus pada kualitas eksekusi di lapangan, pihak Komersial mengevaluasi dampaknya secara finansial, dan pihak Loyalty mengukur dampak jangka panjangnya terhadap perilaku konsumen.
+
+\subsection{Proses Bisnis yang Dimodelkan}
+Untuk menjawab kebutuhan ketiga \en{stakeholder} di atas, tiga proses bisnis pada Bagian 1.1.1 dipetakan ke dalam tabel matriks berikut:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Matriks Proses Bisnis dan Fact Table}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Proses Bisnis} & \textbf{Fact Table (Rencana)} & \textbf{Stakeholder Utama} \\ \hline
+Penjualan Tiket & \texttt{fct\_ticket\_sales} & VP Commercial \& Revenue (pendapatan tiket, diskon, \en{load factor}) \\ \hline
+Perjalanan \en{Itinerary} (\en{Leg}) & \texttt{fct\_passenger\_itinerary\_leg} & VP of Operations (ketepatan waktu, \en{missed connection}, kompensasi) \\ \hline
+Transaksi Loyalitas & \texttt{fct\_loyalty\_transaction} & Head of Customer Loyalty (\en{loyalty tier}, poin, \en{repeat booking}) \\ \hline
+\end{tabular}
+\end{table}
+
+Ketiga \en{fact table} tersebut akan berbagi \en{conformed dimension} yang sama, antara lain \texttt{dim\_passenger}, \texttt{dim\_route}, dan \texttt{dim\_date}, sehingga analisis lintas proses—misalnya menghubungkan insiden \en{missed connection} yang dicatat di tabel perjalanan dengan aktivitas \en{redeem} poin di tabel loyalitas—dapat dilakukan secara konsisten.
+
+\subsection{Business Questions}
+
+\subsubsection{Manajemen Operasional \& Komersial}
+\begin{enumerate}
+    \item Terminal transit dan pasangan rute manakah yang mencatatkan \en{missed connection rate} tertinggi selama periode observasi?
+    \item Rute operasional dan armada bus manakah yang memiliki \en{arrival delay} (keterlambatan kedatangan) serta \en{SLA breach rate} tertinggi?
+    \item Berapa total \en{revenue leakage} absolut yang diakibatkan oleh proses \en{refund}, \en{rebooking}, dan kompensasi uang tunai pada setiap rute selama musim sibuk (\en{peak season})?
+\end{enumerate}
+
+\subsubsection{Manajemen Loyalitas Pelanggan (Customer Loyalty)}
+\begin{enumerate}
+    \setcounter{enumi}{3}
+    \item Bagaimana perbedaan tingkat frekuensi perjalanan, pendapatan kotor rata-rata, dan pola penggunaan \en{loyalty points} pada setiap \en{loyalty tier} (misal: Basic, Gold, Platinum)?
+    \item Apakah terdapat korelasi atau asosiasi antara penumpang yang pernah mengalami insiden \en{missed connection} dengan \en{repeat booking rate} yang lebih rendah dibandingkan penumpang tanpa riwayat gangguan operasional?
+\end{enumerate}
+
+\subsection{Sumber Data yang Relevan}
+Untuk menjawab \en{business questions} di atas, data mentah (\en{raw/source data}) operasional sintetis yang dibutuhkan dan akan dibangkitkan pada Tahap 3 meliputi:
+\begin{itemize}
+    \item \textbf{Tabel Pelanggan (\texttt{raw\_passengers}):} Memuat data identitas pelanggan, riwayat kontak, dan status segmentasi program loyalitas.
+    \item \textbf{Tabel Pemesanan \& Tiket (\texttt{raw\_bookings}, \texttt{raw\_ticket\_legs}):} Memuat data transaksi pemesanan, nilai tarif dasar, diskon, dan rincian perjalanan per segmen rute (\en{leg}).
+    \item \textbf{Tabel Jadwal Bus (\texttt{raw\_bus\_schedules}):} Memuat kapasitas armada, rute, dan jadwal terencana (keberangkatan/kedatangan).
+    \item \textbf{Tabel Log Operasional (\texttt{raw\_trip\_events}):} Memuat pencatatan waktu aktual armada tiba dan berangkat di tiap terminal, yang menjadi dasar kalkulasi \en{delay}.
+    \item \textbf{Tabel Riwayat Loyalitas (\texttt{raw\_loyalty\_transactions}):} Merekam histori mutasi penambahan dan pengurangan poin pelanggan.
+    \item \textbf{Tabel Klaim \& Kompensasi (\texttt{raw\_compensation\_claims}):} Mencatat insiden \en{refund} atau kompensasi finansial akibat kegagalan SLA.
+\end{itemize}
+Ketujuh sumber data mentah ini akan menjadi dasar bagi perancangan dimensional modeling pada Bab berikutnya, sekaligus acuan struktur bagi \en{synthetic data generator} yang akan dikembangkan.
+\end{itemize}
+Ketujuh sumber data mentah ini akan menjadi dasar bagi perancangan dimensional modeling pada Bab berikutnya, sekaligus acuan struktur bagi \en{synthetic data generator} yang akan dikembangkan.
 \subsection{Pertanyaan Analitik Utama}
+
 \subsection{Proses Bisnis Utama}
 \subsection{Sumber Data}
 
