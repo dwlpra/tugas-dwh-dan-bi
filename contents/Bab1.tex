@@ -113,29 +113,252 @@ pengguna utama data mart, yaitu:
 
 \section{Perancangan Dimensional Modeling}
 \subsection{Penentuan Grain}
+
+Grain menentukan makna dari satu baris pada fact table. Penentuan grain dilakukan
+sebelum memilih dimensi dan measure agar data dari proses bisnis yang berbeda tidak
+tercampur dalam satu tingkat detail. Rancangan ini menggunakan grain atomik untuk
+mempertahankan detail transaksi dan perjalanan yang diperlukan dalam analisis.
+
 \subsubsection{Grain Setiap Fact Table}
+
+\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0.5em,
+    parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
+    \item \texttt{fct\_ticket\_sales}: satu baris merepresentasikan satu tiket milik
+    satu penumpang untuk satu \textit{itinerary leg} pada saat transaksi pembelian
+    berhasil. Jika satu itinerary terdiri atas beberapa leg, nilai tarif, diskon,
+    dan pajak dialokasikan ke setiap leg agar pendapatan tidak dihitung berulang.
+    \item \texttt{fct\_passenger\_itinerary\_leg}: satu baris merepresentasikan satu
+    penumpang pada satu leg dalam satu perjalanan bus terjadwal. Baris diperbarui
+    ketika penumpang melewati tahapan perjalanan, mulai dari pemesanan sampai
+    penyelesaian gangguan atau klaim jika ada.
+    \item \texttt{fct\_loyalty\_transaction}: satu baris merepresentasikan satu
+    transaksi poin milik satu penumpang, baik berupa perolehan, penukaran,
+    penyesuaian, maupun kedaluwarsa poin.
+\end{enumerate}
+
 \subsubsection{Alasan Pemilihan Grain}
+
+Grain per tiket-leg pada penjualan dipilih agar pendapatan dapat dianalisis sampai
+tingkat segmen rute. Grain per penumpang-leg pada pelaksanaan perjalanan digunakan
+karena dampak gangguan dapat berbeda untuk setiap penumpang, terutama pada itinerary
+yang memiliki terminal transit. Transaksi loyalitas dipisahkan karena mutasi poin
+dapat terjadi di luar perjalanan, misalnya ketika poin kedaluwarsa atau mendapat
+penyesuaian manual.
+
 \subsubsection{Implikasi terhadap Granularitas dan Performa Query}
+
+Grain atomik akan menghasilkan jumlah baris yang lebih besar dibandingkan tabel
+yang sudah diagregasi. Meskipun demikian, data masih dapat diringkas berdasarkan
+tanggal, rute, terminal, atau penumpang sesuai kebutuhan analisis. Nilai keterlambatan
+bus yang muncul pada beberapa baris penumpang tidak boleh langsung dijumlahkan.
+Analisis keterlambatan perlu menggunakan rata-rata pengalaman penumpang atau terlebih
+dahulu dikelompokkan berdasarkan \texttt{trip\_id} agar satu perjalanan bus tidak
+dihitung berulang.
+
 \subsection{Pemetaan Proses Bisnis}
 \subsubsection{Business Process dan Fact Table}
+
+Setiap proses bisnis utama dipetakan ke fact table sebagai berikut:
+
+\begin{center}
+\begin{tabular}{|p{0.28\textwidth}|p{0.34\textwidth}|p{0.25\textwidth}|}
+\hline
+\textbf{Proses bisnis} & \textbf{Fact table} & \textbf{Jenis fact table} \\
+\hline
+Penjualan tiket & \texttt{fct\_ticket\_sales} & Transaction fact table \\
+\hline
+Pelaksanaan perjalanan & \texttt{fct\_passenger\_itinerary\_leg} & Accumulating snapshot \\
+\hline
+Transaksi loyalitas & \texttt{fct\_loyalty\_transaction} & Transaction fact table \\
+\hline
+\end{tabular}
+\end{center}
+
 \subsubsection{Conformed Dimensions}
+
+Ketiga fact table menggunakan dimensi yang konsisten agar hasil dari proses bisnis
+yang berbeda dapat dibandingkan. \texttt{dim\_passenger} dan \texttt{dim\_date}
+digunakan oleh seluruh fact table. \texttt{dim\_route} digunakan bersama oleh fact
+penjualan dan perjalanan, sedangkan \texttt{dim\_terminal} dan
+\texttt{dim\_bus\_fleet} terutama digunakan pada fact perjalanan. Pemetaan ini akan
+dirangkum kembali dalam bus matrix setelah seluruh atribut dimensi ditetapkan.
+
 \subsection{Perancangan Fact Table}
 \subsubsection{Jenis Fact Table}
+
+\texttt{fct\_ticket\_sales} dan \texttt{fct\_loyalty\_transaction} menggunakan
+jenis transaction fact table karena setiap baris dicatat untuk satu kejadian
+transaksi. \texttt{fct\_passenger\_itinerary\_leg} menggunakan accumulating snapshot
+karena satu baris diperbarui ketika tahapan perjalanan penumpang berlangsung.
+
 \subsubsection{Measures dan Klasifikasi Aditivitas}
+
+Measure utama pada setiap fact table dirancang sebagai berikut:
+
+\begin{itemize}[leftmargin=*, topsep=0pt]
+    \item \texttt{fct\_ticket\_sales}: \texttt{allocated\_base\_fare},
+    \texttt{discount\_amount}, \texttt{tax\_amount},
+    \texttt{net\_ticket\_revenue}, \texttt{loyalty\_points\_earned}, dan
+    \texttt{loyalty\_points\_redeemed}. Seluruh nilai tersebut additive karena
+    dicatat sebagai nilai per tiket-leg dan dapat dijumlahkan pada semua dimensi.
+    \item \texttt{fct\_passenger\_itinerary\_leg}:
+    \texttt{missed\_connection\_count}, \texttt{rebooking\_cost},
+    \texttt{refund\_amount}, dan \texttt{compensation\_amount} bersifat additive.
+    \texttt{departure\_delay\_minutes}, \texttt{arrival\_delay\_minutes},
+    \texttt{scheduled\_connection\_minutes}, dan
+    \texttt{actual\_connection\_minutes} bersifat non-additive karena penjumlahan
+    durasi dari beberapa perjalanan atau penumpang tidak selalu memiliki makna.
+    \item \texttt{fct\_loyalty\_transaction}: \texttt{points\_transacted} bersifat
+    additive dengan nilai positif untuk poin masuk dan negatif untuk poin keluar.
+    \texttt{points\_balance\_after} bersifat non-additive dan digunakan sebagai
+    saldo terakhir setelah suatu transaksi.
+\end{itemize}
+
 \subsubsection{Foreign Keys}
+
+Foreign key yang direncanakan meliputi:
+
+\begin{itemize}[leftmargin=*, topsep=0pt]
+    \item \texttt{fct\_ticket\_sales}: \texttt{passenger\_sk},
+    \texttt{booking\_date\_sk}, \texttt{booking\_time\_sk},
+    \texttt{route\_sk}, \texttt{sales\_context\_sk}, dan
+    \texttt{promotion\_sk};
+    \item \texttt{fct\_passenger\_itinerary\_leg}: \texttt{passenger\_sk},
+    \texttt{route\_sk}, \texttt{bus\_fleet\_sk},
+    \texttt{origin\_terminal\_sk}, \texttt{destination\_terminal\_sk},
+    \texttt{disruption\_reason\_sk}, serta date key dan time key untuk jadwal dan
+    realisasi keberangkatan maupun kedatangan; dan
+    \item \texttt{fct\_loyalty\_transaction}: \texttt{passenger\_sk},
+    \texttt{transaction\_date\_sk}, \texttt{transaction\_time\_sk}, dan
+    \texttt{loyalty\_transaction\_type\_sk}.
+\end{itemize}
+
 \subsubsection{Degenerate Dimensions}
+
+Nomor transaksi yang diperlukan untuk penelusuran tetapi tidak memiliki atribut
+deskriptif disimpan langsung pada fact table. Atribut tersebut meliputi
+\texttt{booking\_id}, \texttt{ticket\_number}, dan \texttt{itinerary\_id} pada
+fact penjualan; \texttt{ticket\_number}, \texttt{itinerary\_id}, dan
+\texttt{trip\_id} pada fact perjalanan; serta
+\texttt{loyalty\_transaction\_id} pada fact transaksi loyalitas.
+
 \subsection{Perancangan Dimension Table}
 \subsubsection{Surrogate Keys dan Atribut Dimensi}
+
+Setiap dimension table menggunakan surrogate key bertipe integer sebagai primary
+key dan tetap menyimpan natural key dari sistem sumber. Dimensi yang direncanakan
+terdiri atas:
+
+\begin{itemize}[leftmargin=*, topsep=0pt]
+    \item \texttt{dim\_date}: tanggal, hari, nama hari, minggu, bulan, kuartal,
+    tahun, dan penanda musim sibuk;
+    \item \texttt{dim\_time}: jam, menit, kelompok waktu, dan penanda jam sibuk;
+    \item \texttt{dim\_passenger}: ID penumpang, nama, kota domisili, tanggal
+    registrasi, dan tingkat loyalitas;
+    \item \texttt{dim\_terminal}: ID terminal, nama terminal, kota, provinsi, dan
+    kapasitas terminal;
+    \item \texttt{dim\_route}: ID rute, nama rute, jarak, dan estimasi waktu
+    perjalanan;
+    \item \texttt{dim\_bus\_fleet}: ID armada, nomor pelat, kelas bus, konfigurasi
+    kursi, tahun produksi, dan kapasitas kursi;
+    \item \texttt{dim\_sales\_context}: kelas tarif, kanal pemesanan, metode
+    pembayaran, dan penanda tiket dapat dikembalikan;
+    \item \texttt{dim\_promotion}: kode, nama, dan jenis promosi;
+    \item \texttt{dim\_disruption\_reason}: kategori dan tingkat keparahan
+    gangguan; dan
+    \item \texttt{dim\_loyalty\_transaction\_type}: jenis mutasi poin.
+\end{itemize}
+
 \subsubsection{Hierarki Dimensi}
+
+Hierarki yang digunakan antara lain tanggal menuju bulan, kuartal, dan tahun pada
+\texttt{dim\_date}; terminal menuju kota dan provinsi pada
+\texttt{dim\_terminal}; serta kelas bus menuju jenis konfigurasi kursi pada
+\texttt{dim\_bus\_fleet}. Hierarki ini digunakan untuk melakukan analisis dari
+tingkat detail menuju tingkat ringkasan.
+
 \subsubsection{Role-Playing Dimensions}
+
+\texttt{dim\_date} dan \texttt{dim\_time} digunakan dalam beberapa peran, seperti
+tanggal dan waktu pemesanan, keberangkatan terjadwal, keberangkatan aktual,
+kedatangan terjadwal, serta kedatangan aktual. \texttt{dim\_terminal} juga digunakan
+sebagai terminal asal dan terminal tujuan. Setiap peran direpresentasikan oleh
+foreign key yang berbeda pada fact table meskipun mengarah ke dimension table yang
+sama.
+
 \subsubsection{Junk Dimensions}
+
+\texttt{dim\_sales\_context} digunakan sebagai junk dimension untuk menggabungkan
+atribut transaksi dengan kardinalitas rendah, seperti kelas tarif, kanal pemesanan,
+metode pembayaran, dan penanda tiket dapat dikembalikan. Penggabungan ini menghindari
+pembuatan beberapa dimension table kecil yang hanya memiliki sedikit atribut.
+
 \subsubsection{Outrigger Dimensions}
+
+Rancangan awal tidak menggunakan outrigger dimension. Atribut deskriptif disimpan
+langsung pada dimensi terkait agar bentuk star schema tetap sederhana. Keputusan ini
+dapat ditinjau kembali apabila ditemukan hierarki yang perlu dikelola secara
+terpisah pada tahap implementasi.
+
 \subsection{Slowly Changing Dimensions}
 \subsubsection{Atribut yang Berubah}
+
+Atribut yang diperkirakan berubah meliputi tingkat loyalitas dan data kontak
+penumpang, kelas serta konfigurasi kursi armada, dan kapasitas terminal. Perubahan
+tersebut perlu dibedakan antara perubahan yang memengaruhi analisis historis dan
+koreksi administratif.
+
 \subsubsection{Strategi SCD dan Justifikasi}
+
+\begin{itemize}[leftmargin=*, topsep=0pt]
+    \item \texttt{dim\_passenger.loyalty\_tier} menggunakan SCD Tipe 2 agar tingkat
+    loyalitas pada saat transaksi tetap dapat diketahui. Setiap perubahan membuat
+    versi baris baru.
+    \item \texttt{dim\_passenger.email} dan \texttt{phone} menggunakan SCD Tipe 1
+    karena perubahan data kontak diperlakukan sebagai pembaruan administratif.
+    \item \texttt{dim\_bus\_fleet.bus\_class}, \texttt{seat\_configuration}, dan
+    \texttt{seat\_capacity} menggunakan SCD Tipe 2 agar kapasitas dan kelas armada
+    pada perjalanan historis tetap dapat dianalisis dengan benar.
+    \item Koreksi salah ketik pada \texttt{dim\_bus\_fleet.license\_plate}
+    menggunakan SCD Tipe 1. Perubahan pelat yang benar-benar terjadi secara
+    operasional diperlakukan sebagai perubahan historis.
+    \item \texttt{dim\_terminal.capacity} menggunakan SCD Tipe 2 jika perubahan
+    kapasitas diperlukan dalam analisis historis, sedangkan koreksi nama terminal
+    menggunakan SCD Tipe 1.
+\end{itemize}
+
+Dimensi yang menggunakan SCD Tipe 2 akan memiliki surrogate key, natural key,
+\texttt{effective\_start\_date}, \texttt{effective\_end\_date}, dan
+\texttt{is\_current}. Kombinasi kolom tersebut digunakan untuk menentukan versi
+dimensi yang berlaku pada tanggal suatu transaksi.
+
 \subsection{Diagram Skema Dimensional}
 \subsubsection{Star Schema atau Snowflake Schema}
+
+Rancangan menggunakan pendekatan star schema dengan tiga fact table yang berbagi
+conformed dimensions. Keseluruhan rancangan dapat dipandang sebagai kumpulan tiga
+star schema yang saling berhubungan melalui \texttt{dim\_passenger},
+\texttt{dim\_date}, dan \texttt{dim\_time}. Selain itu, \texttt{dim\_route}
+digunakan bersama oleh fact penjualan tiket dan fact perjalanan penumpang.
+Hubungan antartabel pada tingkat konseptual ditunjukkan pada
+Gambar~\ref{fig:dimensional-model}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dimensional_model.png}
+    \caption{Fact constellation perjalanan bus antarkota multi-leg dan loyalitas
+    penumpang}
+    \label{fig:dimensional-model}
+\end{figure}
+
 \subsubsection{Relasi dan Tipe Data Utama}
+
+Diagram final perlu mencantumkan primary key, foreign key, dan tipe data utama pada
+setiap tabel. Surrogate key direncanakan menggunakan tipe integer, nilai finansial
+menggunakan decimal, jumlah poin dan durasi menggunakan integer, tanggal menggunakan
+date, serta waktu kejadian menggunakan timestamp atau pasangan date key dan time key.
+Detail ini akan disesuaikan kembali dengan teknologi penyimpanan yang digunakan pada
+tahap pembangunan data mart.
 
 \section{Synthetic Data Generation}
 \subsection{Strategi Pembuatan Data Sintetis}
