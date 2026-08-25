@@ -1,0 +1,140 @@
+\documentclass[xcolor=table,t,aspectratio=169]{beamer}
+\usepackage{pgfpages,graphicx,listings,hyperref}
+\usepackage{subfigure}
+\usepackage[table]{xcolor}
+\usepackage{multicol,multirow}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{enumerate}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{ugmyellow}{HTML}{f6d648}
+\definecolor{ugmblue}{HTML}{194168}
+\definecolor{ugmbackgroundblue}{HTML}{00416B}
+\definecolor{ugmbackgroundgrey}{RGB}{220, 220, 220}
+\renewcommand{\figurename}{Gambar}
+
+\lstdefinelanguage{C++}
+{
+	stringstyle=\color{black},
+	identifierstyle=\color{darkblue},
+	keywordstyle=\color{cyan},
+	morekeywords={cin,cout}% list your attributes here
+}
+
+\lstset{language=SQL,
+	columns=fullflexible,
+	showstringspaces=false,
+	numbers=left,   
+	numbersep=5pt,frame=single,stepnumber=3,
+	basicstyle=\ttfamily,
+	keywordstyle=\color{blue}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	commentstyle=\color{cyan}\ttfamily,
+	morecomment=[l][\color{magenta}]{\#}
+}
+
+\usepackage[latin1]{inputenc}
+\hypersetup{%
+	pdftitle={Data Warehouse \& Business Intelligence},%
+	pdfauthor={Khabib Mustofa,Dr.techn.},%
+	pdfsubject={Kuliah S2 Ilmu Komputer},%
+	pdfkeywords={Warehouse, OLAP, Data Mart}%
+}
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,urlcolor=links}
+\setbeamercovered{transparent}
+
+\definecolor{ag}{rgb}{0.55, 0.71, 0.0}
+\newcommand{\teksmerah}[1]{{\color{red} #1}}
+\newcommand{\teksbiru}[1]{{\color{blue} #1}}
+\newcommand{\tekshijau}[1]{{\color{ag} #1}}
+\newcommand{\kodependek}[1]{{\teksbiru{\texttt{#1}}}}
+\newcommand{\kodemerah}[1]{{\teksmerah{\texttt{#1}}}}
+  \newcommand{\tebalmerah}[1]{{\bfseries\color{red} #1}}
+\newcommand{\tebalbiru}[1]{{\bfseries\color{blue} #1}}
+\newcommand{\tebalhijau}[1]{{\bfseries\color{ag} #1}}
+
+%$$$$$$$$$$$$$$$$
+\title[Data Mart dan Visualisasinya]{Pembentukan Data Mart Kasus Bisnis dan Visualisasinya}
+\subtitle{Konsep dan Implementasi}
+\date{}
+\author[Mustofa]{Khabib Mustofa \\
+\small{\texttt{khabib@ugm.ac.id}} \\
+\url{http://khabib.staff.ugm.ac.id}
+}
+\institute[UGM, Yogyakarta, Indonesia]{Dept of  Computer Science and Electronics, Universitas Gadjah Mada}
+% Beginning of Code for UGM 2025 Template
+\usefonttheme{professionalfonts}
+\setbeamerfont{title}{series=\bfseries,parent=structure}
+\setbeamerfont{frametitle}{series=\bfseries,parent=structure}
+\mode<article> % only for the article version
+{
+  \usepackage{fullpage}
+  \usepackage{hyperref}
+}
+
+\mode<presentation>
+{
+ \logo{\includegraphics[height=.75cm]{images/logougm.png}}
+}
+\usetheme{Copenhagen}
+\usecolortheme{seahorse}
+\definecolor{ugmyellow}{HTML}{f6d648}
+\definecolor{ugmblue}{HTML}{194168}
+\definecolor{ugmbackgroundblue}{HTML}{00416B}
+\definecolor{ugmgray}{HTML}{E0E0E0}
+\setbeamercolor{title}{bg=ugmgray, fg=ugmblue}
+\setbeamercolor{frametitle}{bg=white, fg=ugmblue}
+\setbeamercolor{section in head/foot}{fg=white, bg=ugmblue}
+\setbeamercolor{subsection in head/foot}{fg=black, bg=ugmgray}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+
+% Regular block
+\setbeamercolor{block title}{fg=white, bg=ugmblue}
+\setbeamercolor{block body}{fg=black, bg=ugmblue!8}
+\setbeamertemplate{footline}{
+  \leavevmode%
+  \hbox{%
+    % Column 1: 60% - White on darkblue
+    \colorbox{ugmgray}{\makebox[.50\paperwidth][l]{   \color{ugmblue}\hspace{2ex}\usebeamerfont{author in head/foot}%
+      \textbf{Merakyat, Mandiri, Berkelanjutan $|$ Inclusive, Self-Reliant, Sustainable}
+    }}%
+    
+    % Column 2: 25% - Black on grey
+    \colorbox{ugmbackgroundblue}{\makebox[.15\paperwidth][c]{
+      \color{white}\usebeamerfont{title in head/foot}%
+      \textbf{ugm.ac.id}
+    }}%
+    
+    % Column 3: 15% - White on darkblue
+    \colorbox{ugmgray}{\makebox[.40\paperwidth][c]{
+  \color{black}\usebeamerfont{date in head/foot}%
+  \textbf{\insertshorttitle\ (\insertframenumber/\inserttotalframenumber) \hspace{2ex}}%
+}}
+  }%
+  \vskip0pt%
+}
+\usebackgroundtemplate{\tikz\node[opacity=0.2]{\includegraphics[height=\paperheight]{images/latar31.jpg}};}
+% End of Code for UGM 2025 Template
+%$$$$$$$$$$$$$$$$$$
+\setbeamertemplate{caption}[numbered]
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Cakupan Materi}
+       \tiny
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+
+
+\begin{document}
+\frame{ \titlepage}
+\begin{frame}{Pendahuluan}
+\footnotesize
+    
+\end{frame}
+\end{document}

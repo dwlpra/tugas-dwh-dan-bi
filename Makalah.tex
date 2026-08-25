@@ -1,0 +1,94 @@
+\documentclass[oneside,a4paper,11pt,explicit]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[sedes]{kultem}
+\usepackage[english]{babel}
+\usepackage{mdframed}
+\usepackage{minitoc}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{comment}
+\usepackage{subfig}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{multicol}
+\usepackage[semicolon,round,sort&compress,sectionbib]{natbib}  %
+\usepackage{chapterbib}
+
+\titlespacing{\section}{0pt}{\parskip}{-.5\parskip}
+\titlespacing{\subsection}{0pt}{\parskip}{-.5\parskip}
+\titlespacing{\subsubsection}{0pt}{\parskip}{-.5\parskip}
+%% INSERT YOUR PACKAGES HERE
+\usepackage[accsupp]{axessibility}  % improves PDF readability for those with disabilities.
+\usepackage[hidelinks]{hyperref}
+\usepackage{lipsum}
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand{\partname}{Bagian}
+\addto\captionsenglish{%
+  \renewcommand{\contentsname}{Daftar Isi}%
+  \renewcommand{\chaptername}{Bab}
+  \renewcommand{\bibname}{Daftar Pustaka}
+  \renewcommand{\figurename}{Gambar}
+  \renewcommand{\tablename}{Tabel}
+  \renewcommand{\listfigurename}{Daftar Gambar}
+    \renewcommand{\mtctitle}{Isi Bab}
+}
+%\renewcommand{\contentsname}{Daftar Isi}
+
+\setlength{\parskip}{1em}
+\newcommand{\teksmerah}[1]{{\color{red} \slshape #1}}
+\newcommand{\merahbold}[1]{{\color{red}\bfseries #1}}
+\newcommand{\teksbiru}[1]{{\fontfamily{qcs}\selectfont \slshape #1}}
+
+\newcommand{\birubold}[1]{{\color{blue}\bfseries #1}}
+\newcommand{\tekshijau}[1]{{\color{green} #1}}
+\newcommand{\teksungu}[1]{{\fontfamily{lmss}\selectfont\itshape #1}}
+  
+\newtcolorbox{mybox}[2][]{%
+ % attach boxed title to top center
+ %             = {yshift=-8pt},
+  colback      = blue!5!white,
+  colframe     = blue!75!black,
+  fonttitle    = \bfseries,
+  colbacktitle = blue!85!black,
+  title        = #2,#1,
+ % enhanced,
+}
+
+\definecolor{delim}{RGB}{20,105,176}
+\definecolor{numb}{RGB}{106, 109, 32}
+\definecolor{string}{rgb}{0.64,0.08,0.08}
+
+\setcounter{secnumdepth}{2}
+\usepackage{amsmath} % Used by equations
+\usepackage{makeidx}
+\makeindex
+%\makeindex
+
+\title{Data Warehouse and Business Intelligence}
+\subtitle{Tugas Kelompok: Pembentukan Data Mart dan Visualisasi Data}
+
+\professor{Khabib Mustofa}
+
+\begin{document}
+\maketitle
+\Large
+\frontmatter
+\addcontentsline{toc}{chapter}{\indexname}
+\printindex
+\renewcommand{\baselinestretch}{0.6}\normalsize
+\tableofcontents
+\renewcommand{\baselinestretch}{1.0}\normalsize
+\mainmatter
+\normalsize
+%\part{DBT Sebagai Tools Bantu Untuk Data Warehouse}
+\include{contents/Bab1}
+%\part{Penyiapan Lingkungan DBT}
+\include{contents/Bab2}
+\backmatter
+\end{document}
+

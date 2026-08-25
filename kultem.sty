@@ -1,0 +1,168 @@
+%% This is the file `kultem.sty',
+%% a non-official KU Leuven template.
+%%
+%% Copyright (C) 2021 by Henri De Plaen, KU Leuven.
+%%
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.2 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.2 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%%
+%% I do not own the rights on the KU Leuven logo, which is by consequence
+%% not covered by the license above.
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{kultem}[2024/01/18 KU Leuven style (v0.2)]
+
+\let\myDate\date
+\newcommand\GoodBye[1][\bfseries]{{#1Good Bye}}
+
+%% PACKAGES
+\RequirePackage{kvoptions}
+\RequirePackage{svg}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{tikz}
+\RequirePackage{etoolbox}
+\RequirePackage{enumitem}
+\RequirePackage{geometry}
+\RequirePackage{color}
+\RequirePackage[scaled]{helvet}
+\RequirePackage{sansmath}
+\RequirePackage{caption}
+\RequirePackage{titlesec}
+\RequirePackage{stackengine}
+\RequirePackage{microtype}
+
+%%GENERAL
+\DeclareBoolOption[false]{binding}
+\DeclareBoolOption[false]{sedes}
+\ProcessKeyvalOptions{kultem}\relax
+
+\ifkultem@binding
+\edef\kultem@bindingoffset{12mm}
+\else
+\edef\kultem@bindingoffset{0mm}
+\fi
+\geometry{%
+a4paper,%
+bindingoffset=\kultem@bindingoffset,%
+left=20mm,%
+right=20mm,%
+top=35mm,%
+bottom=20mm,%
+heightrounded}
+\setlength{\fboxsep}{3pt}
+
+%% SEDES WATERMARK
+\ifkultem@sedes
+\RequirePackage{silence}
+\WarningsOff[everypage] % Suppress warnings related to package everypage
+\RequirePackage[pages=some]{background}
+\backgroundsetup{
+scale=1.7,
+angle=0,
+opacity=0.1,
+hshift=100,
+vshift=-10,
+contents={%
+ % \includesvg{figures/kuleuven-sedes.svg}
+ \includegraphics[scale=0.45]{figures/latar2.png}
+  }%
+}%
+\fi
+
+
+%% OPTIONS
+\newcommand*{\subtitle}[1]{\gdef\@subtitle{#1}}\newcommand*{\@subtitle}{}%
+\newcommand*{\assistant}[1]{\gdef\@assistant{#1}}\newcommand*{\@assistant}{}%
+\newcommand*{\assistants}[1]{\gdef\@assistants{#1}}\newcommand*{\@assistants}{}%
+\newcommand*{\professor}[1]{\gdef\@professor{#1}}\newcommand*{\@professor}{}%
+\newcommand*{\professors}[1]{\gdef\@professors{#1}}\newcommand*{\@professors}{}%
+\newcommand*{\supercom}[1]{\gdef\@supercom{#1}}\newcommand*{\@supercom}{}%
+\newcommand*{\promoter}[1]{\gdef\@promoter{#1}}\newcommand*{\@promoter}{}%
+\newcommand*{\promoters}[1]{\gdef\@promoters{#1}}\newcommand*{\@promoters}{}%
+\newcommand*{\jury}[1]{\gdef\@jury{#1}}\newcommand*{\@jury}{}%
+\newcommand*{\assessors}[1]{\gdef\@assessors{#1}}\newcommand*{\@assessors}{}%
+\newcommand*{\coverimage}[1]{\gdef\@coverimage{#1}}\newcommand*{\@coverimage}{}%
+\newcommand*{\coversvg}[1]{\gdef\@coversvg{#1}}\newcommand*{\@coversvg}{}%
+\newcommand*{\coverinput}[1]{\gdef\@coverinput{#1}}\newcommand*{\@coverinput}{}%
+\def\figurename{\textsc{Figure}}\def\tablename{\textsc{Table}}\setlength\parindent{0pt}
+
+
+%% KU LEUVEN COLORS
+\definecolor{Blue1}{HTML}{04A549} %1FABD5
+\definecolor{Blue2}{HTML}{0449A5} %1D8DB0
+\definecolor{Blue3}{HTML}{116E8A}
+\colorlet{LightBlue}{Blue2!20!white}
+
+%% TASKS & QUESTIONS
+\newlist{questions}{enumerate}{1}\setlist[questions]{label*=\textbf{\arabic{*}.},ref=\arabic{*}.}
+\makeatletter\newcommand\question[1][]{\if\relax\detokenize{#1}\relax\item\relax\else\protected@edef\@currentlabel{#1}\item[#1:~]\fi}\makeatother
+\newlist{tasks}{enumerate}{1}\setlist[tasks]{label*=\textbf{\roman{*}.},ref=\roman{*}.}
+\makeatletter\newcommand\task[1][]{\if\relax\detokenize{#1}\relax\item\relax\else\protected@edef\@currentlabel{#1}\item[#1:~]\fi}\makeatother
+    
+%% FONT
+\sansmath
+\SetSymbolFont{operators}{sans}{OT1}{cmss}{m}{n}
+\SetSymbolFont{letters}{sans}{OML}{cmbrm}{m}{it}
+\SetSymbolFont{symbols}{sans}{OMS}{cmbrs}{m}{n}
+\SetSymbolFont{largesymbols}{sans}{OMX}{iwona}{m}{n}
+\renewcommand{\familydefault}{\sfdefault}
+
+%% HEADERS
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}\usetikzlibrary{calc}
+\makeatletter\renewcommand{\headrulewidth}{0pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[C]{\begin{tikzpicture}[overlay, remember picture]
+    \fill[Blue2] (current page.north west) rectangle ($(current page.north east)+(0,-1in)$);
+    \node[anchor=north west, text=white, font=\Large, minimum size=1in, inner xsep=5mm, align=left] at (current page.north west) {\bf{\MakeUppercase{\@title}}\\\@subtitle};
+    \node[anchor=north east, minimum size=1in, inner xsep=5mm] at (current page.north east) {\includegraphics[scale=0.13]{figures/lambangUGM.png}};\end{tikzpicture}}
+\fancyfoot[C]{\begin{tikzpicture}[overlay, remember picture]%
+    \fill[Blue2] (current page.south west) rectangle ($(current page.south east)+(0,.5in)$);
+    \node[anchor=south west, text=white, font=\large, minimum size=.5in, inner xsep=5mm] at (current page.south west) {\leftmark};
+    \node[anchor=south east, text=white, font=\Large, minimum size=.5in] at (current page.south east) {\thepage};\end{tikzpicture}}
+\setlength{\headheight}{13.6pt}\makeatother
+
+%% CHAPTER & SECTION
+\titleformat{\chapter}[display]{}{\hfill \tikz[remember picture] \node[] (nr) {\bf{\fontsize{20}{70}\selectfont\color{black}\MakeUppercase{\chaptername}~~ \fontsize{60}{70}\selectfont\color{black} \thechapter}};\begin{tikzpicture}[overlay,remember picture]\coordinate (rightborder) at ($(nr)+(100,0)$);\coordinate (right) at ($(nr.east) + (0.5,0)$);\draw[line width=4.5em, Blue2] (right) -- (rightborder);\end{tikzpicture}}{-1ex}{\filleft\fontsize{30}{30}\selectfont #1}[\vspace{-1ex}]
+\titleformat{\section}[hang]{}{}{0pt}{\noindent\def\stackalignment{l}\stackunder[0pt]{\colorbox{Blue1}{\textcolor{white}{\textbf{\LARGE \thesection \large\MakeUppercase{\space #1}}}}}{\textcolor{Blue2}{\rule{\linewidth}{2pt}}}}[]
+
+%% BOX
+\newcommand\kulbox[2][3pt]{\setlength{\fboxsep}{#1}\par\noindent\begin{center}\colorbox{LightBlue}{\parbox{\linewidth-2\fboxsep}{#2}}\end{center}\setlength{\fboxsep}{3pt}}
+
+%% COVER PAGE
+\makeatletter
+\renewcommand\maketitle{%
+\ifkultem@sedes%
+\BgThispage%
+\fi%
+\vfill%
+\begin{flushleft}\vspace*{3cm}{\fontsize{30}{30}\textbf{\color{Blue2}\@title}} \\[0.7cm]\ifdefempty{\@subtitle}{}{\textbf{\LARGE\color{gray}\@subtitle}}\end{flushleft}%
+\begin{flushright}\vspace*
+{1cm}\fontsize{18}{18}\textbf{\@author\\}\vspace*{1cm}
+\LARGE
+\ifdefempty{\@promoter}{}{{\bf\textcolor{gray}{Promotor\\}}\textbf{\@professor\\}\vspace*{1cm}}%
+\ifdefempty{\@promoters}{}{{\bf\textcolor{gray}{Para Promoters\\}}\textbf{\@professors\\}\vspace*{1cm}}%
+\ifdefempty{\@supercom}{}{{\bf\textcolor{gray}{Supervisory committee\\}}\textbf{\@supercom\\}\vspace*{1cm}}%
+\ifdefempty{\@jury}{}{{\bf\textcolor{gray}{Penguji\\}}\textbf{\@jury\\}\vspace*{1cm}}%
+\ifdefempty{\@assessors}{}{{\bf\textcolor{gray}{Penilai/asesor\\}}\textbf{\@assessors\\}\vspace*{1cm}}%
+\ifdefempty{\@professor}{}{{\bf\textcolor{gray}{Dosen Pengampu\\}}\fontsize{20}{20}\textbf{\@professor\\}\vspace*{1cm}}%
+\ifdefempty{\@professors}{}{{\bf\textcolor{gray}{Professors\\}}\textbf{\@professors\\}\vspace*{1cm}}%
+\ifdefempty{\@assistant}{}{{\bf\textcolor{gray}{Assistant\\}}\textbf{\@assistant\\}\vspace*{1cm}}%
+\ifdefempty{\@assistants}{}{{\bf\textcolor{gray}{Assistants\\}}\textbf{\@assistants\\}\vspace*{1cm}}%
+\end{flushright}\vfill%
+\ifdefempty{\@coverimage}{}{\begin{center}\includegraphics[width=0.7\textwidth]{\@coverimage}\end{center}\vfill}%
+\ifdefempty{\@coversvg}{}{\begin{center}\includesvg[width=0.7\textwidth]{\@coversvg}\end{center}\vfill}%
+\ifdefempty{\@coverinput}{}{\begin{center}\input{\@coverinput}\end{center}\vfill}%
+\begin{center}\@date\end{center}%
+}\makeatother
+
+\endinput
+%%
+%% End of file `kultem.sty'.
