@@ -1,4 +1,4 @@
-\chapter{Multidimensional Data Modelling}
+\chapter{Multidimensional Data Modelling (Studi Kasus: Perjalanan Bus Antarkota Multi-Leg dan Loyalitas Penumpang)}
 \begin{mybox}{Anggota Kelompok}
 \begin{enumerate}
     \itemsep0em
@@ -9,11 +9,104 @@
 
 \section{Pendahuluan}
 \subsection{Deskripsi Domain}
+
+Domain yang dipilih adalah transportasi publik dengan fokus pada perjalanan bus
+antarkota dengan beberapa segmen (\textit{multi-leg}) dan loyalitas penumpang.
+Dalam studi kasus ini, satu rencana perjalanan (\textit{itinerary}) dapat terdiri
+atas lebih dari satu segmen perjalanan (\textit{leg}). Penumpang dapat berpindah
+bus di terminal transit sebelum mencapai tujuan akhir.
+
+Ruang lingkup studi kasus mencakup tiga proses bisnis berikut:
+\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt,
+    parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
+    \item Penjualan tiket: pencatatan pembelian tiket untuk suatu
+    rencana perjalanan.
+    \item Pelaksanaan perjalanan: pencatatan jadwal serta realisasi
+    keberangkatan dan kedatangan pada setiap segmen perjalanan.
+    \item Transaksi loyalitas: pencatatan perolehan, penukaran,
+    penyesuaian, dan kedaluwarsa poin milik penumpang.
+\end{enumerate}
+
+Ketiga proses tersebut dipilih agar kinerja operasional perjalanan, dampak finansial,
+dan aktivitas loyalitas penumpang dapat dianalisis secara terintegrasi. Seluruh data
+dalam studi kasus ini, termasuk data penumpang, armada, terminal, jadwal, dan
+transaksi, dibuat secara sintetis dan tidak merepresentasikan apapun yang ada di dunia nyata.
+
+
 \subsection{Latar Belakang}
+
+Sistem operasional perusahaan bus antarkota dirancang untuk mendukung transaksi
+harian, seperti pemesanan kursi, penjadwalan armada, dan pemrosesan pembayaran.
+Sistem ini menggunakan basis data \textit{Online Transaction Processing} (OLTP)
+yang mengutamakan kecepatan dan ketepatan dalam melakukan pencatatan transaksi. Struktur data OLTP
+umumnya ternormalisasi dan tersebar pada sejumlah tabel sehingga sesuai untuk proses
+\textit{insert}, \textit{update}, dan \textit{delete}. Akan tetapi kurang praktis jika
+digunakan langsung untuk analisis historis yang melibatkan banyak tabel dan periode
+waktu yang panjang.
+
+Kebutuhan analisis akan menjadi lebih kompleks pada perjalanan bus antarkota dengan
+beberapa segmen. Keterlambatan pada satu segmen dapat mengurangi waktu transit dan
+menyebabkan penumpang gagal melanjutkan perjalanan dengan bus berikutnya
+(\textit{missed connection}). Kondisi tersebut dapat menimbulkan proses pemesanan
+ulang, pengembalian dana, atau pemberian kompensasi. Manajemen perlu melihat hubungan
+antara gangguan perjalanan, kerugian pendapatan, dan kemungkinan penumpang melakukan
+pemesanan kembali. Analisis lintas proses dan lintas waktu seperti ini sulit dilakukan
+secara langsung pada sistem transaksi harian.
+
+Oleh karena itu, data warehouse diperlukan untuk mengintegrasikan data penjualan
+tiket, pelaksanaan perjalanan, dan transaksi loyalitas ke dalam struktur yang
+mendukung analisis historis. Perancangan pada tugas ini menggunakan metodologi
+Kimball Dimensional Modeling karena dimulai dari proses bisnis dan menghasilkan
+data mart yang dapat digunakan untuk menjawab kebutuhan analitik serta menjadi
+sumber data bagi tahap visualisasi.
+
 \subsection{Tujuan}
+
+Berdasarkan latar belakang tersebut, tugas ini bertujuan untuk:
+\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt,
+    parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
+    \item menganalisis kebutuhan bisnis para pemangku kepentingan pada layanan bus
+    antarkota, terutama yang berkaitan dengan ketepatan waktu operasional, potensi
+    kehilangan pendapatan, dan loyalitas penumpang;
+    \item merancang skema dimensional berbentuk \textit{star schema}, termasuk
+    menentukan \textit{grain}, \textit{fact table}, \textit{dimension table}, dan
+    strategi \textit{Slowly Changing Dimension} (SCD) untuk atribut yang dapat
+    berubah, seperti tingkat loyalitas penumpang;
+    \item membangun dataset sintetis yang merepresentasikan data operasional mentah,
+    termasuk variasi musim sibuk, insiden gagal melanjutkan perjalanan pada saat
+    transit, pembatalan, dan kompensasi;
+    \item mengimplementasikan pipeline ETL/ELT untuk mentransformasikan data mentah
+    menjadi data mart yang terdokumentasi dan memiliki relasi antartabel yang
+    konsisten; dan
+    \item melakukan verifikasi dan validasi data mart melalui query analitik yang
+    menjawab kebutuhan bisnis serta memastikan bahwa data mart dapat digunakan
+    sebagai sumber data pada tahap visualisasi.
+\end{enumerate}
 
 \section{Analisis Kebutuhan Bisnis}
 \subsection{Stakeholder Bisnis}
+
+Analisis kebutuhan bisnis difokuskan pada tiga fungsi manajemen yang akan menjadi
+pengguna utama data mart, yaitu:
+\begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt,
+    parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
+    \item \textit{VP of Operations}, bertanggung jawab atas ketepatan jadwal
+    keberangkatan dan kedatangan armada bus. Data yang dibutuhkan berkaitan dengan
+    hambatan operasional di terminal, rasio \textit{missed connection} akibat
+    keterlambatan, serta kinerja rute dan armada dalam memenuhi target ketepatan
+    waktu atau \textit{Service Level Agreement} (SLA).
+    \item \textit{VP of Commercial and Revenue Management}, bertanggung jawab atas
+    pendapatan dan profitabilitas perusahaan. Analisis yang dibutuhkan meliputi
+    pendapatan tiket, tingkat keterisian kursi (\textit{load factor}) per rute,
+    efektivitas diskon, serta potensi kehilangan pendapatan akibat pengembalian dana,
+    pemesanan ulang, dan biaya kompensasi.
+    \item \textit{Head of Customer Loyalty}, bertanggung jawab atas program
+    loyalitas dan retensi penumpang. Data mart digunakan untuk melihat perubahan
+    tingkat loyalitas, pola perolehan dan penukaran poin, tingkat pemesanan kembali,
+    serta hubungan antara gangguan perjalanan yang dialami penumpang dengan retensi
+    mereka.
+\end{enumerate}
+
 \subsection{Pertanyaan Analitik Utama}
 \subsection{Proses Bisnis Utama}
 \subsection{Sumber Data}
