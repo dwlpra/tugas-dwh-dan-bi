@@ -1,18 +1,77 @@
-\chapter{Studi Kasus: Transportasi Dan Kargo}
-\begin{mybox}{Anggota kelompok}
+\chapter{Multidimensional Data Modelling}
+\begin{mybox}{Anggota Kelompok}
 \begin{enumerate}
     \itemsep0em
-    \item Mahasiswa 1 (NIM xxx)
-    \item Mahasiswa 2 (NIM yyy)
+    \item Citra Putri Saragih (25/574147/PPA/07239)
+    \item Ade Dwi Putra (25/574144/PPA/07237)
 \end{enumerate}
 \end{mybox}
 
-\section{Tinjauan Kasus}
-\subsection{Proses Bisnis dan Situasi Kasus}
-\subsection{Contoh Skenario Bisnis dan Pentingnya dalam Kasus}
+\section{Pendahuluan}
+\subsection{Deskripsi Domain}
+\subsection{Latar Belakang}
+\subsection{Tujuan}
 
-\section{Penyelesaian Kebutuhan Bisnis}
-\subsection{Analisis Kebutuhan Bisnis}
-\subsection{Perancangan Dimensional Modelling}
-\subsection{Pembuatan Dataset}
-\subsection{Verifikasi dan Validasi}
+\section{Analisis Kebutuhan Bisnis}
+\subsection{Stakeholder Bisnis}
+\subsection{Pertanyaan Analitik Utama}
+\subsection{Proses Bisnis Utama}
+\subsection{Sumber Data}
+
+\section{Perancangan Dimensional Modeling}
+\subsection{Penentuan Grain}
+\subsubsection{Grain Setiap Fact Table}
+\subsubsection{Alasan Pemilihan Grain}
+\subsubsection{Implikasi terhadap Granularitas dan Performa Query}
+\subsection{Pemetaan Proses Bisnis}
+\subsubsection{Business Process dan Fact Table}
+\subsubsection{Conformed Dimensions}
+\subsection{Perancangan Fact Table}
+\subsubsection{Jenis Fact Table}
+\subsubsection{Measures dan Klasifikasi Aditivitas}
+\subsubsection{Foreign Keys}
+\subsubsection{Degenerate Dimensions}
+\subsection{Perancangan Dimension Table}
+\subsubsection{Surrogate Keys dan Atribut Dimensi}
+\subsubsection{Hierarki Dimensi}
+\subsubsection{Role-Playing Dimensions}
+\subsubsection{Junk Dimensions}
+\subsubsection{Outrigger Dimensions}
+\subsection{Slowly Changing Dimensions}
+\subsubsection{Atribut yang Berubah}
+\subsubsection{Strategi SCD dan Justifikasi}
+\subsection{Diagram Skema Dimensional}
+\subsubsection{Star Schema atau Snowflake Schema}
+\subsubsection{Relasi dan Tipe Data Utama}
+
+\section{Synthetic Data Generation}
+\subsection{Strategi Pembuatan Data Sintetis}
+\subsection{Skema Data Sumber}
+\subsection{Implementasi Generator Data}
+\subsection{Volume, Distribusi, dan Variasi Data}
+\subsection{Outlier dan Skenario SCD}
+\subsection{Contoh Data Mentah}
+
+\section{Data Mart}
+\subsection{Arsitektur dan Pipeline ETL/ELT}
+\subsection{Skema Final Data Mart}
+\subsection{Dokumentasi Tabel dan Kolom}
+\subsection{Konsistensi Referensial}
+\subsection{Koneksi ke BI Tools}
+\subsection{Semantic Layer}
+
+\section{Verifikasi dan Validasi}
+\subsection{Query Analitik}
+\subsection{Hasil Query}
+\subsection{Data Quality Check}
+\subsubsection{Pemeriksaan Duplikat}
+\subsubsection{Pemeriksaan Nilai Null}
+\subsubsection{Pemeriksaan Konsistensi Referensial}
+
+\section{Kesimpulan dan Refleksi}
+\subsection{Kesimpulan}
+\subsection{Tantangan yang Dihadapi}
+\subsection{Keputusan Desain Utama}
+\subsection{Kesiapan Data Mart untuk Visualisasi}
+
+\section{Referensi}
