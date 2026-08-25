@@ -1,0 +1,26 @@
+terminal_id,terminal_name,city,province,capacity_per_day
+TRM-01,Terminal Jakarta,Jakarta,DKI Jakarta,1700
+TRM-02,Terminal Bandung,Bandung,Jawa Barat,2400
+TRM-03,Terminal Semarang,Semarang,Jawa Tengah,1800
+TRM-04,Terminal Yogyakarta,Yogyakarta,DI Yogyakarta,700
+TRM-05,Terminal Surabaya,Surabaya,Jawa Timur,3000
+TRM-06,Terminal Malang,Malang,Jawa Timur,1800
+TRM-07,Terminal Solo,Solo,Jawa Tengah,2400
+TRM-08,Terminal Cirebon,Cirebon,Jawa Barat,800
+TRM-09,Terminal Tegal,Tegal,Jawa Tengah,2700
+TRM-10,Terminal Purwokerto,Purwokerto,Jawa Tengah,600
+TRM-11,Terminal Kediri,Kediri,Jawa Timur,2300
+TRM-12,Terminal Madiun,Madiun,Jawa Timur,2700
+TRM-13,Terminal Jember,Jember,Jawa Timur,2100
+TRM-14,Terminal Probolinggo,Probolinggo,Jawa Timur,1300
+TRM-15,Terminal Banyuwangi,Banyuwangi,Jawa Timur,1000
+TRM-16,Terminal Bogor,Bogor,Jawa Barat,1200
+TRM-17,Terminal Sukabumi,Sukabumi,Jawa Barat,1500
+TRM-18,Terminal Tasikmalaya,Tasikmalaya,Jawa Barat,1200
+TRM-19,Terminal Garut,Garut,Jawa Barat,2000
+TRM-20,Terminal Cilacap,Cilacap,Jawa Tengah,2900
+TRM-21,Terminal Pekalongan,Pekalongan,Jawa Tengah,3000
+TRM-22,Terminal Magelang,Magelang,Jawa Tengah,2100
+TRM-23,Terminal Salatiga,Salatiga,Jawa Tengah,1400
+TRM-24,Terminal Jepara,Jepara,Jawa Tengah,3000
+TRM-25,Terminal Pati,Pati,Jawa Tengah,2900

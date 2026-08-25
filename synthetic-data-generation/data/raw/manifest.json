@@ -1,0 +1,66 @@
+{
+  "seed": 2026,
+  "generated_at": "deterministic; timestamps are part of the synthetic records",
+  "files": {
+    "raw_passengers.csv": {
+      "rows": 4000,
+      "sha256": "38bd8bc4734d948c88d75286d2fb8d3628472c0c0eaaa300943e5b529d1e3bca"
+    },
+    "raw_passenger_tier_history.csv": {
+      "rows": 4941,
+      "sha256": "e6d5c4579a6e2f2ed57c970f35a5a6caa6e87fe173e383650196a4984c25d93a"
+    },
+    "raw_terminals.csv": {
+      "rows": 25,
+      "sha256": "f83650660dff80b27f4778d2910708bf80bf967e82fca7b4db103aeb2b416606"
+    },
+    "raw_routes.csv": {
+      "rows": 30,
+      "sha256": "9895f260a86d3ee29d856f85b3ec573f741774b5cf57885959c16bd5dfcd3053"
+    },
+    "raw_bus_fleets.csv": {
+      "rows": 80,
+      "sha256": "8892f1af9a5450bd086615d1aec3bed0edc4885ed3209147de2a6f09b6a621f6"
+    },
+    "raw_bus_fleet_history.csv": {
+      "rows": 24,
+      "sha256": "937473fc4a9cc0596772d12156341f22e1b8561d17dd22adf64013b32d447889"
+    },
+    "raw_terminal_capacity_history.csv": {
+      "rows": 10,
+      "sha256": "bbe66592a30713a70ed90fa1606467b8b5b632a9cd8b78ac36f3a9044074841b"
+    },
+    "raw_bus_schedules.csv": {
+      "rows": 4018,
+      "sha256": "419ac8466cc809d3ff54f6d1290c412adeebe4154bc6156219f3dcf0221f9544"
+    },
+    "raw_bookings.csv": {
+      "rows": 12510,
+      "sha256": "d4fcd496e11975be29cb85c874acf54cf3f96984472be8f74622e9e6477adfa8"
+    },
+    "raw_ticket_legs.csv": {
+      "rows": 25000,
+      "sha256": "e98784e7670d33f92ad20e9613adadcd50afd5a54bbc265ada803e501df0eacf"
+    },
+    "raw_trip_events.csv": {
+      "rows": 4018,
+      "sha256": "3aae306e52fe7ead6b4e5bba6600e5f615bdeb250faffe3946b66bc7edd8fd53"
+    },
+    "raw_passenger_leg_events.csv": {
+      "rows": 25000,
+      "sha256": "6ce899315cc6510c1db2a8655540754615930238d2990b9c14a9989576a0e0c5"
+    },
+    "raw_loyalty_transactions.csv": {
+      "rows": 13928,
+      "sha256": "b30908ca8188ad24d57e619d74fcf98999e2aea097b980242602c961550edb8d"
+    },
+    "raw_promotions.csv": {
+      "rows": 3,
+      "sha256": "ee5e79da80242892ee9b8e8f911ce5a9073341b7e367e34a9e55b04eea450934"
+    },
+    "raw_compensation_claims.csv": {
+      "rows": 2860,
+      "sha256": "1bc2f32e573ce9f6c978577761e7943e38a7c38efa89c3b0108db1e7916278e8"
+    }
+  }
+}

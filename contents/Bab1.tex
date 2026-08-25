@@ -139,7 +139,8 @@ Untuk menjawab \en{business questions} di atas, data mentah (\en{raw/source data
     \item \textbf{Tabel Riwayat Loyalitas (\texttt{raw\_loyalty\_transactions}):} Merekam histori mutasi penambahan dan pengurangan poin pelanggan.
     \item \textbf{Tabel Klaim \& Kompensasi (\texttt{raw\_compensation\_claims}):} Mencatat insiden \en{refund} atau kompensasi finansial akibat kegagalan SLA.
 \end{itemize}
-Ketujuh sumber data mentah ini akan menjadi dasar bagi perancangan dimensional modeling pada Bab berikutnya, sekaligus acuan struktur bagi \en{synthetic data generator} yang akan dikembangkan.
+Sumber data mentah tersebut menjadi dasar perancangan dimensional modeling dan
+acuan struktur bagi \en{synthetic data generator} yang dikembangkan.
 
 \section{Perancangan Dimensional Modeling}
 \subsection{Penentuan Grain}
@@ -392,11 +393,174 @@ tahap pembangunan data mart.
 
 \section{Synthetic Data Generation}
 \subsection{Strategi Pembuatan Data Sintetis}
-\subsection{Skema Data Sumber}
-\subsection{Implementasi Generator Data}
-\subsection{Volume, Distribusi, dan Variasi Data}
-\subsection{Outlier dan Skenario SCD}
+
+Data sumber dibuat dengan skrip Python pada berkas
+\texttt{synthetic-data-generation/generate.py}. Pustaka Faker digunakan untuk
+membuat identitas penumpang, sedangkan nilai transaksi, jadwal, keterlambatan,
+dan mutasi poin dibuat dengan generator kustom. Data yang dihasilkan merupakan
+data operasional mentah. Surrogate key dan struktur fact--dimension belum
+diterapkan pada tahap ini.
+
+Generator menggunakan \texttt{SEED = 2026}. Seed tersebut membuat hasil
+pembangkitan dapat diulang dengan isi yang sama. Hasil disimpan pada direktori
+\texttt{data/raw}. Jika direktori tersebut sudah berisi file, proses pembangkitan
+dilewati agar data yang telah digunakan tidak tertimpa.
+
+Perjalanan dibuat dalam satu sampai tiga leg. Setiap leg berikutnya dimulai dari
+terminal tujuan leg sebelumnya. Jadwal bus digunakan oleh beberapa penumpang dan
+jumlah tiket pada satu trip dibatasi oleh kapasitas armada. Juni, Juli, dan
+Desember diberi peluang perjalanan yang lebih besar untuk mewakili musim sibuk.
+
+\subsection{Kode Generator}
+
+Nilai acak tidak semuanya menggunakan peluang yang sama. Tingkat loyalitas,
+kanal pemesanan, kelas bus, promosi, dan metode pembayaran menggunakan bobot yang
+berbeda. Tarif dihitung dari jarak rute, kelas bus, dan penanda musim sibuk.
+Keterlambatan normal dibuat dengan distribusi Gaussian, kemudian sebagian trip
+diberi keterlambatan ekstrem sebagai outlier.
+
+Bagian berikut menunjukkan konfigurasi utama dan pemeriksaan direktori keluaran.
+
+\begin{lstlisting}[language=Python]
+SEED = 2026
+TOTAL_PASSENGERS = 4_000
+TOTAL_TICKET_LEGS = 25_000
+PEAK_MONTHS = {6, 7, 12}
+
+def main():
+    if OUTPUT_DIR.exists() and any(OUTPUT_DIR.iterdir()):
+        print("Data mentah sudah tersedia.")
+        print("Proses generate dilewati agar file tidak tertimpa.")
+        return
+\end{lstlisting}
+
+Sebelum CSV ditulis, fungsi \texttt{validate()} memeriksa foreign key alami,
+urutan terminal pada itinerary, kapasitas bus, tanggal registrasi dan pemesanan,
+serta saldo transaksi loyalitas. Generator juga membuat \texttt{manifest.json}
+yang berisi jumlah baris dan checksum SHA-256 setiap CSV.
+
+Hasil pembangkitan terdiri atas 96.447 baris dalam 15 CSV dengan ukuran sekitar
+7,8 MB. Rincian jumlah baris ditunjukkan pada Tabel~\ref{tab:volume-raw-data}.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Jumlah Baris Data Mentah}
+\label{tab:volume-raw-data}
+\begin{tabular}{|l|r|l|r|}
+\hline
+\textbf{Berkas} & \textbf{Baris} & \textbf{Berkas} & \textbf{Baris} \\
+\hline
+\texttt{raw\_passengers} & 4.000 & \texttt{raw\_bookings} & 12.510 \\
+\texttt{raw\_passenger\_tier\_history} & 4.941 & \texttt{raw\_ticket\_legs} & 25.000 \\
+\texttt{raw\_terminals} & 25 & \texttt{raw\_trip\_events} & 4.018 \\
+\texttt{raw\_routes} & 30 & \texttt{raw\_passenger\_leg\_events} & 25.000 \\
+\texttt{raw\_bus\_fleets} & 80 & \texttt{raw\_loyalty\_transactions} & 13.928 \\
+\texttt{raw\_bus\_fleet\_history} & 24 & \texttt{raw\_compensation\_claims} & 2.860 \\
+\texttt{raw\_terminal\_capacity\_history} & 10 & \texttt{raw\_promotions} & 3 \\
+\texttt{raw\_bus\_schedules} & 4.018 & & \\
+\hline
+\end{tabular}
+\end{table}
+
+Sebanyak 25.000 tiket-leg berasal dari 12.510 itinerary dan menggunakan 4.018
+trip terjadwal. Rata-rata terdapat 6,22 penumpang per trip. Hasil pemeriksaan
+menunjukkan bahwa tidak ada jumlah penumpang yang melebihi kapasitas armada.
+Sekitar 49,5\% keberangkatan leg pertama terjadi pada bulan musim sibuk. Angka
+ini muncul dari bobot tanggal perjalanan yang lebih besar pada Juni, Juli, dan
+Desember.
+
+Data memuat 50 pelanggan tanpa alamat email. Nilai kosong tersebut sengaja
+dipertahankan untuk menguji penanganan missing value pada proses ETL. Selain itu,
+terdapat 104 trip dengan keterlambatan kedatangan di atas 120 menit. Gangguan
+dibagi menjadi kerusakan mesin, kemacetan, dan cuaca.
+
+Gagal koneksi ditentukan dengan membandingkan kedatangan aktual leg sebelumnya
+dan keberangkatan aktual leg lanjutan. Jika waktu yang tersisa kurang dari 15
+menit, penumpang diberi status \texttt{MISSED\_CONNECTION}. Dataset memuat 2.860
+kejadian tersebut dan setiap kejadian memiliki satu catatan klaim.
+
+Skenario SCD Tipe 2 tersedia pada riwayat tingkat loyalitas penumpang, perubahan
+kelas atau kapasitas armada, dan perubahan kapasitas terminal. Setiap baris
+riwayat memiliki natural key, \texttt{effective\_start\_date}, dan
+\texttt{effective\_end\_date}. Nilai tanggal akhir dikosongkan untuk versi yang
+masih berlaku.
+
 \subsection{Contoh Data Mentah}
+
+Contoh berikut menunjukkan satu itinerary dengan dua leg. Tujuan leg pertama,
+\texttt{TRM-10}, menjadi terminal asal leg kedua.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Contoh Baris pada \texttt{raw\_ticket\_legs}}
+\begin{tabular}{|l|l|c|l|l|r|}
+\hline
+\textbf{Tiket} & \textbf{Itinerary} & \textbf{Leg} & \textbf{Asal} &
+\textbf{Tujuan} & \textbf{Pendapatan} \\
+\hline
+TICK-000001 & ITI-000001 & 1 & TRM-09 & TRM-10 & 183.000 \\
+TICK-000002 & ITI-000001 & 2 & TRM-10 & TRM-11 & 205.000 \\
+\hline
+\end{tabular}
+\end{table}
+
+Pada tabel jadwal, kedua tiket tersebut merujuk pada
+\texttt{TRIP-000001} dan \texttt{TRIP-000002}. Waktu terjadwal dan waktu aktual
+disimpan pada tabel yang berbeda sehingga keterlambatan dapat dihitung tanpa
+mengubah data jadwal. Pemisahan serupa digunakan untuk booking, transaksi
+loyalitas, dan klaim kompensasi.
+
+\subsection{Skema Sumber}
+
+Generator menghasilkan 15 berkas CSV. Berkas tersebut dikelompokkan berdasarkan
+proses sumber pada Tabel~\ref{tab:kelompok-data-sumber}.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Kelompok Data Sumber Sintetis}
+\label{tab:kelompok-data-sumber}
+\begin{tabular}{|p{0.24\textwidth}|p{0.35\textwidth}|p{0.30\textwidth}|}
+\hline
+\textbf{Kelompok} & \textbf{Berkas} & \textbf{Kegunaan pada Data Mart} \\
+\hline
+Pelanggan & \texttt{raw\_passengers},
+\texttt{raw\_passenger\_tier\_history} & Sumber
+\texttt{dim\_passenger} dan riwayat tingkat loyalitas \\
+\hline
+Referensi perjalanan & \texttt{raw\_terminals}, \texttt{raw\_routes},
+\texttt{raw\_bus\_fleets} & Sumber dimensi terminal, rute, dan armada \\
+\hline
+Riwayat referensi & \texttt{raw\_bus\_fleet\_history},
+\texttt{raw\_terminal\_capacity\_history} & Skenario perubahan kelas armada
+dan kapasitas terminal \\
+\hline
+Jadwal & \texttt{raw\_bus\_schedules} & Sumber trip, armada, rute, dan waktu
+terjadwal \\
+\hline
+Penjualan tiket & \texttt{raw\_bookings}, \texttt{raw\_ticket\_legs},
+\texttt{raw\_promotions} & Sumber \texttt{fct\_ticket\_sales} dan konteks
+penjualan \\
+\hline
+Pelaksanaan perjalanan & \texttt{raw\_trip\_events},
+\texttt{raw\_passenger\_leg\_events} & Sumber waktu aktual, keterlambatan,
+dan status perjalanan penumpang \\
+\hline
+Loyalitas & \texttt{raw\_loyalty\_transactions} & Sumber
+\texttt{fct\_loyalty\_transaction} \\
+\hline
+Klaim & \texttt{raw\_compensation\_claims} & Sumber nilai refund,
+kompensasi, dan rebooking \\
+\hline
+\end{tabular}
+\end{table}
+
+Relasi antarsumber masih menggunakan natural key, misalnya
+\texttt{passenger\_id}, \texttt{booking\_id}, \texttt{ticket\_number},
+\texttt{trip\_id}, dan \texttt{route\_id}. Surrogate key baru dibuat pada proses
+ETL ketika dimension table dan fact table dibangun.
 
 \section{Data Mart}
 \subsection{Arsitektur dan Pipeline ETL/ELT}
