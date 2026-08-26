@@ -86,7 +86,8 @@ Berdasarkan latar belakang tersebut, tugas ini bertujuan untuk:
 \section{Analisis Kebutuhan Bisnis}
 \subsection{Stakeholder Bisnis}
 
-Analisis kebutuhan bisnis difokuskan pada tiga fungsi manajemen yang akan menjadi pengguna utama data mart yang akan dibangun:
+Analisis kebutuhan bisnis difokuskan pada tiga fungsi manajemen yang menjadi
+pengguna utama data mart:
 \begin{enumerate}[label=\alph*., leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt, partopsep=0pt, before=\vspace{-\parskip}]
     \item \en{VP of Operations} – bertanggung jawab atas ketepatan jadwal keberangkatan dan kedatangan armada bus. \en{Stakeholder} ini membutuhkan visibilitas mengenai \en{bottleneck} di terminal, rasio \en{missed connection} akibat keterlambatan, serta kinerja rute dan armada spesifik dalam memenuhi \en{Service Level Agreement} (SLA) ketepatan waktu.
     \item \en{VP of Commercial and Revenue Management} – bertanggung jawab atas profitabilitas perusahaan. \en{Stakeholder} ini berfokus pada pemantauan pendapatan tiket, \en{load factor} (keterisian kursi) per rute, efektivitas pemberian diskon, serta kuantifikasi \en{revenue leakage} yang diakibatkan oleh \en{refund}, \en{rebooking}, atau denda kompensasi operasional.
@@ -667,8 +668,8 @@ berakhiran \texttt{\_sk}. Relationship digunakan agar grain setiap tabel tetap
 dipertahankan.
 
 CSV yang sama dapat digunakan pada visualisasi berbasis Python dengan pandas.
-Dengan demikian, Tableau dan Python membaca hasil ETL yang sama. Koneksi aktual
-dan rancangan dashboard akan dikerjakan pada tahap visualisasi.
+Dengan demikian, Tableau dan Python membaca hasil ETL yang sama. Implementasi
+koneksi dan dashboard dibahas pada Bab 2.
 
 \subsection{Semantic Layer}
 
@@ -1036,9 +1037,8 @@ query.
 CSV fact dan dimension table dapat dibaca langsung oleh Tableau dan pandas.
 Surrogate key telah tersedia untuk membentuk relationship antara fact dan
 dimension table. Data dictionary juga mencatat tipe dan arti setiap kolom.
-Dengan demikian, data mart telah siap digunakan sebagai sumber tahap visualisasi,
-sedangkan pengujian koneksi dan pembuatan dashboard masih perlu dilakukan pada
-Tugas BI.
+Data mart tersebut telah digunakan sebagai sumber dashboard Tableau dan Python
+yang dibahas pada Bab 2.
 
 \section{Referensi}
 

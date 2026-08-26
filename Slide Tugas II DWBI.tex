@@ -386,6 +386,35 @@ seluruhnya menghasilkan\\[0.2cm]
 \end{columns}
 \end{frame}
 
+\section{Visualisasi Python}
+
+\begin{frame}{Missed Connection}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/python-missed-connection.png}
+
+\scriptsize Pasangan Cilacap--Pati dan Pati--Jakarta mencatat tingkat tertinggi,
+yaitu 273 dari 285 koneksi atau 95,79\%.
+\end{frame}
+
+\begin{frame}{Revenue Leakage}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/python-revenue-leakage.png}
+
+\scriptsize Pada musim sibuk, rute Salatiga--Jepara mencatat
+\textit{revenue leakage} tertinggi sebesar Rp56.653.000.
+\end{frame}
+
+\begin{frame}{Missed Connection dan Repeat Booking}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/python-repeat-booking.png}
+
+\scriptsize Perbandingan menunjukkan asosiasi, bukan hubungan sebab-akibat.
+Frekuensi perjalanan dapat memengaruhi peluang mengalami gangguan dan memesan ulang.
+\end{frame}
+
 \section{Visualisasi Tableau}
 
 \begin{frame}{Kinerja Operasional dan Dampak Finansial}
@@ -404,7 +433,7 @@ Salatiga--Jepara (Rp56.653.000).
 {figures/dashboard-perilaku-loyalitas.png}
 
 \scriptsize Tier Basic mencatat jumlah tiket terbesar, sedangkan Platinum memiliki
-rata-rata pendapatan tiket tertinggi sebesar Rp222.565.
+rata-rata \texttt{net\_ticket\_revenue} tertinggi sebesar Rp222.565.
 \end{frame}
 
 \begin{frame}{Aktivitas Transaksi Loyalitas}
@@ -431,6 +460,8 @@ rata-rata pendapatan tiket tertinggi sebesar Rp222.565.
     ditafsirkan dengan memperhatikan frekuensi perjalanan.
     \item Tiga dashboard Tableau menunjukkan bahwa seluruh fact table dapat
     digunakan untuk analisis operasional, komersial, dan loyalitas.
+    \item Dashboard Python menghasilkan angka yang konsisten dengan query
+    verifikasi dan menyediakan filter periode serta rute.
 \end{itemize}
 \end{frame}
 

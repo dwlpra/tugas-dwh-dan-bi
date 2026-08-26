@@ -88,8 +88,68 @@ berulang untuk seluruh penumpang dalam perjalanan yang sama.
 Tabel hasil agregasi disediakan bersama grafik agar angkanya dapat dibandingkan
 dengan query verifikasi pada Bab 1.6. Analisis repeat booking diperlakukan sebagai
 asosiasi, bukan hubungan sebab-akibat, karena data tidak mengendalikan seluruh
-faktor yang dapat memengaruhi perilaku pemesanan penumpang. Gambar hasil dashboard
-Python ditambahkan setelah aplikasi dijalankan.
+faktor yang dapat memengaruhi perilaku pemesanan penumpang.
+
+\subsection{Hasil Dashboard Python}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/python-missed-connection.png}
+    \caption{Analisis missed connection menggunakan Python}
+    \label{fig:python-missed-connection}
+\end{figure}
+
+Gambar \ref{fig:python-missed-connection} menunjukkan pasangan Cilacap--Pati dan
+Pati--Jakarta sebagai koneksi dengan missed connection rate tertinggi, yaitu
+95,79 persen dari 285 koneksi. Urutan hasilnya sama dengan query pertama pada
+Bab 1.6.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/python-delay-sla.png}
+    \caption{Analisis arrival delay dan SLA menggunakan Python}
+    \label{fig:python-delay-sla}
+\end{figure}
+
+Visual delay dan SLA pada Gambar \ref{fig:python-delay-sla} menggunakan satu
+observasi per trip. Kombinasi Jakarta--Surabaya dan BUS-071 memiliki rata-rata
+delay 115,33 menit dengan SLA breach rate 66,67 persen dari tiga perjalanan.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/python-revenue-leakage.png}
+    \caption{Analisis revenue leakage menggunakan Python}
+    \label{fig:python-revenue-leakage}
+\end{figure}
+
+Gambar \ref{fig:python-revenue-leakage} memperlihatkan rute Salatiga--Jepara
+sebagai rute dengan revenue leakage tertinggi pada peak season, yaitu
+Rp56.653.000. Nilai tersebut berasal dari refund, biaya rebooking, dan kompensasi
+pada klaim yang disetujui.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/python-loyalty-tier.png}
+    \caption{Perbandingan aktivitas berdasarkan loyalty tier menggunakan Python}
+    \label{fig:python-loyalty-tier}
+\end{figure}
+
+Perbandingan pada Gambar \ref{fig:python-loyalty-tier} menunjukkan bahwa Basic
+memiliki jumlah booking dan penumpang terbesar, sementara pendapatan rata-rata
+tertinggi terdapat pada Platinum. Grafik poin juga memperlihatkan bahwa perolehan
+poin lebih dominan daripada penukarannya pada seluruh tier.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/python-repeat-booking.png}
+    \caption{Perbandingan repeat booking berdasarkan riwayat gangguan}
+    \label{fig:python-repeat-booking}
+\end{figure}
+
+Gambar \ref{fig:python-repeat-booking} memperlihatkan repeat booking rate sebesar
+94,85 persen pada penumpang yang pernah mengalami missed connection dan 76,54
+persen pada kelompok tanpa missed connection. Hasil ini menunjukkan asosiasi pada
+data sintetis, bukan hubungan sebab-akibat.
 
 \section{Hasil Implementasi Tableau}
 
@@ -141,8 +201,10 @@ analisis ke rute tertentu.
 
 Gambar \ref{fig:dashboard-perilaku-loyalitas} menunjukkan bahwa tier Basic
 mencatat 16.450 tiket, Gold 6.709 tiket, dan Platinum 1.841 tiket. Rata-rata
-pendapatan tiket menunjukkan pola yang berbeda: Platinum memiliki nilai tertinggi
-sebesar Rp222.565, diikuti Gold Rp219.270 dan Basic Rp217.614.
+\texttt{net\_ticket\_revenue} menunjukkan pola yang berbeda: Platinum memiliki
+nilai tertinggi sebesar Rp222.565, diikuti Gold Rp219.270 dan Basic Rp217.614.
+Nilai ini mencakup pajak, sedangkan visual Python mengikuti gross revenue pada
+query Bab 1.6 yang dihitung dari tarif setelah diskon sebelum pajak.
 
 Rata-rata poin yang diperoleh berada pada kisaran 21,74--22,25 poin per transaksi,
 sedangkan rata-rata poin yang ditukarkan berada pada kisaran 1,08--1,16 poin per
@@ -190,8 +252,9 @@ sebelum digunakan untuk menarik kesimpulan kausal.
 
 \section{Kesimpulan}
 
-Tiga dashboard Tableau telah dibangun dari keluaran data mart untuk mendukung
-analisis operasional, komersial, dan loyalitas. Implementasi Python menggunakan
-sumber data dan definisi metrik yang sama sebagai jalur pemeriksaan agregasi
-melalui kode. Gambar hasil Python masih perlu ditambahkan setelah aplikasi
-dijalankan agar implementasi kedua tools terdokumentasi pada laporan.
+Tableau dan Python-based tools telah menggunakan keluaran data mart yang sama.
+Tiga dashboard Tableau mendukung analisis operasional, komersial, dan loyalitas,
+sedangkan dashboard Python menyajikan lima visual yang mengikuti business
+questions dan query verifikasi. Metrik yang menggunakan definisi sama menghasilkan
+angka yang konsisten, sedangkan perbedaan gross dan net revenue dijelaskan sesuai
+kolom yang digunakan.

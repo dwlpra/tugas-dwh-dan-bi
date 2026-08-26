@@ -12,7 +12,7 @@ import streamlit as st
 
 
 APP_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = APP_DIR.parents[1]
+PROJECT_DIR = APP_DIR.parent
 MART_DIR = PROJECT_DIR / "data-mart" / "output"
 SLA_LIMIT_MINUTES = 60
 
