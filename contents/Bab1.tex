@@ -408,16 +408,381 @@ tahap pembangunan data mart.
 
 \section{Verifikasi dan Validasi}
 \subsection{Query Analitik}
+
+Verifikasi dilakukan melalui notebook \texttt{verification.ipynb}. CSV hasil ETL
+dimuat ke SQLite in-memory menggunakan pandas, kemudian query dijalankan dengan
+\texttt{read\_sql\_query()}. SQLite hanya digunakan selama notebook berjalan dan
+tidak menjadi format penyimpanan data mart.
+
+Lima query berikut dibuat untuk menjawab business questions pada Bagian 1.2.3.
+
+\subsubsection{Terminal Transit dan Pasangan Rute}
+
+Query pertama memasangkan leg dengan leg sebelumnya berdasarkan itinerary dan
+urutan leg. Terminal asal pada leg lanjutan diperlakukan sebagai terminal transit.
+
+\begin{lstlisting}[language=SQL]
+SELECT
+    t.terminal_name AS transit_terminal,
+    route_in.route_name AS incoming_route,
+    route_out.route_name AS onward_route,
+    COUNT(*) AS total_connection_legs,
+    SUM(f.missed_connection_count) AS total_missed_connections,
+    ROUND(100.0 * SUM(f.missed_connection_count) / COUNT(*), 2)
+        AS missed_connection_rate_pct
+FROM fct_passenger_itinerary_leg AS f
+JOIN fct_passenger_itinerary_leg AS previous_leg
+    ON f.itinerary_id = previous_leg.itinerary_id
+   AND f.leg_sequence = previous_leg.leg_sequence + 1
+JOIN dim_terminal AS t ON f.origin_terminal_sk = t.terminal_sk
+JOIN dim_route AS route_in ON previous_leg.route_sk = route_in.route_sk
+JOIN dim_route AS route_out ON f.route_sk = route_out.route_sk
+GROUP BY t.terminal_name, route_in.route_name, route_out.route_name
+HAVING COUNT(*) >= 10
+ORDER BY missed_connection_rate_pct DESC
+LIMIT 10;
+\end{lstlisting}
+
+\subsubsection{Keterlambatan dan Pelanggaran SLA}
+
+Keterlambatan diringkas lebih dahulu per trip agar satu perjalanan bus tidak
+dihitung berulang untuk setiap penumpang. Batas pelanggaran SLA ditetapkan pada
+arrival delay di atas 60 menit.
+
+\begin{lstlisting}[language=SQL]
+WITH trip_performance AS (
+    SELECT DISTINCT
+        trip_id, route_sk, bus_fleet_sk, arrival_delay_minutes
+    FROM fct_passenger_itinerary_leg
+)
+SELECT
+    r.route_name,
+    b.bus_fleet_id,
+    b.bus_class,
+    COUNT(*) AS total_trips,
+    ROUND(AVG(tp.arrival_delay_minutes), 2)
+        AS avg_arrival_delay_minutes,
+    ROUND(100.0 * SUM(
+        CASE WHEN tp.arrival_delay_minutes > 60 THEN 1 ELSE 0 END
+    ) / COUNT(*), 2) AS sla_breach_rate_pct
+FROM trip_performance AS tp
+JOIN dim_route AS r ON tp.route_sk = r.route_sk
+JOIN dim_bus_fleet AS b ON tp.bus_fleet_sk = b.bus_fleet_sk
+GROUP BY r.route_name, b.bus_fleet_id, b.bus_class
+HAVING COUNT(*) >= 3
+ORDER BY sla_breach_rate_pct DESC, avg_arrival_delay_minutes DESC
+LIMIT 10;
+\end{lstlisting}
+
+\subsubsection{Revenue Leakage pada Musim Sibuk}
+
+Revenue leakage dihitung dari refund, biaya rebooking, dan kompensasi pada klaim
+berstatus approved. Baris karantina tidak dimasukkan ke perhitungan fact.
+
+\begin{lstlisting}[language=SQL]
+SELECT
+    r.route_name,
+    SUM(f.refund_amount) AS total_refund,
+    SUM(f.rebooking_cost) AS total_rebooking_cost,
+    SUM(f.compensation_amount) AS total_compensation,
+    SUM(f.refund_amount + f.rebooking_cost + f.compensation_amount)
+        AS total_revenue_leakage
+FROM fct_passenger_itinerary_leg AS f
+JOIN dim_route AS r ON f.route_sk = r.route_sk
+JOIN dim_date AS d ON f.scheduled_departure_date_sk = d.date_sk
+WHERE d.is_peak_season = 1
+  AND f.claim_status = 'Approved'
+GROUP BY r.route_name
+ORDER BY total_revenue_leakage DESC
+LIMIT 10;
+\end{lstlisting}
+
+\subsubsection{Perbandingan Berdasarkan Loyalty Tier}
+
+Query keempat membandingkan frekuensi booking, pendapatan kotor tiket, dan mutasi
+poin berdasarkan tier yang berlaku pada saat transaksi.
+
+\begin{lstlisting}[language=SQL]
+SELECT
+    p.loyalty_tier,
+    COUNT(DISTINCT f.itinerary_id) AS total_bookings,
+    COUNT(DISTINCT p.passenger_id) AS total_passengers,
+    ROUND(1.0 * COUNT(DISTINCT f.itinerary_id)
+        / COUNT(DISTINCT p.passenger_id), 2) AS avg_booking_frequency,
+    ROUND(AVG(f.allocated_base_fare - f.discount_amount), 2)
+        AS avg_gross_ticket_revenue,
+    SUM(f.loyalty_points_earned) AS total_points_earned,
+    SUM(f.loyalty_points_redeemed) AS total_points_redeemed
+FROM fct_ticket_sales AS f
+JOIN dim_passenger AS p ON f.passenger_sk = p.passenger_sk
+GROUP BY p.loyalty_tier
+ORDER BY avg_booking_frequency DESC;
+\end{lstlisting}
+
+\subsubsection{Missed Connection dan Repeat Booking}
+
+Query terakhir membentuk ringkasan gangguan dan jumlah booking per penumpang.
+Natural key \texttt{passenger\_id} digunakan agar beberapa versi SCD milik orang
+yang sama tetap dihitung bersama.
+
+\begin{lstlisting}[language=SQL]
+WITH disruption_by_passenger AS (
+    SELECT
+        p.passenger_id,
+        MAX(f.missed_connection_count) AS ever_missed_connection
+    FROM fct_passenger_itinerary_leg AS f
+    JOIN dim_passenger AS p ON f.passenger_sk = p.passenger_sk
+    GROUP BY p.passenger_id
+),
+booking_by_passenger AS (
+    SELECT
+        p.passenger_id,
+        COUNT(DISTINCT f.booking_id) AS booking_count
+    FROM fct_ticket_sales AS f
+    JOIN dim_passenger AS p ON f.passenger_sk = p.passenger_sk
+    GROUP BY p.passenger_id
+)
+SELECT
+    CASE WHEN d.ever_missed_connection = 1
+        THEN 'Pernah missed connection'
+        ELSE 'Tidak pernah missed connection'
+    END AS disruption_group,
+    COUNT(*) AS passenger_count,
+    ROUND(AVG(b.booking_count), 2) AS avg_booking_count,
+    ROUND(100.0 * AVG(
+        CASE WHEN b.booking_count > 1 THEN 1.0 ELSE 0.0 END
+    ), 2) AS repeat_booking_rate_pct
+FROM disruption_by_passenger AS d
+JOIN booking_by_passenger AS b ON d.passenger_id = b.passenger_id
+GROUP BY d.ever_missed_connection
+ORDER BY d.ever_missed_connection DESC;
+\end{lstlisting}
+
 \subsection{Hasil Query}
+\subsubsection{Hasil Query Terminal Transit dan Pasangan Rute}
+
+Lima pasangan rute dengan missed connection rate tertinggi ditunjukkan pada
+Tabel~\ref{tab:hasil-bq1}.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Hasil Query Missed Connection per Terminal dan Pasangan Rute}
+\label{tab:hasil-bq1}
+\begin{tabular}{|l|l|l|r|r|}
+\hline
+\textbf{Terminal} & \textbf{Rute masuk} & \textbf{Rute lanjutan} &
+\textbf{Koneksi} & \textbf{Rate (\%)} \\
+\hline
+Pati & Cilacap--Pati & Pati--Jakarta & 285 & 95,79 \\
+Salatiga & Magelang--Salatiga & Salatiga--Jepara & 550 & 93,45 \\
+Pekalongan & Cilacap--Pekalongan & Pekalongan--Magelang & 303 & 88,12 \\
+Surabaya & Yogyakarta--Surabaya & Surabaya--Purwokerto & 222 & 86,94 \\
+Banyuwangi & Probolinggo--Banyuwangi & Banyuwangi--Cilacap & 241 & 84,23 \\
+\hline
+\end{tabular}
+\end{table}
+
+Terminal Pati menempati urutan pertama dengan 273 missed connection dari 285
+leg koneksi. Nilai yang tinggi menunjukkan bahwa kombinasi jadwal dan delay pada
+pasangan rute tersebut menyediakan waktu transit yang terlalu sempit dalam data
+sintetis. Hasil ini tidak dapat digeneralisasi ke operator bus nyata.
+
+\subsubsection{Hasil Query Keterlambatan dan Pelanggaran SLA}
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Hasil Query Arrival Delay dan SLA Breach}
+\label{tab:hasil-bq2}
+\begin{tabular}{|l|l|l|r|r|r|}
+\hline
+\textbf{Rute} & \textbf{Armada} & \textbf{Kelas} & \textbf{Trip} &
+\textbf{Delay} & \textbf{SLA (\%)} \\
+\hline
+Jakarta--Surabaya & BUS-071 & Executive & 3 & 115,33 & 66,67 \\
+Kediri--Madiun & BUS-059 & Executive & 3 & 67,67 & 66,67 \\
+Sukabumi--Tasikmalaya & BUS-058 & Economy & 3 & 63,67 & 66,67 \\
+Tasikmalaya--Garut & BUS-038 & Executive & 3 & 62,00 & 66,67 \\
+Cirebon--Tegal & BUS-017 & Economy & 4 & 105,00 & 50,00 \\
+\hline
+\end{tabular}
+\end{table}
+
+Kombinasi Jakarta--Surabaya dan BUS-071 memiliki rata-rata arrival delay
+tertinggi pada hasil lima besar. Jumlah trip per kombinasi masih kecil sehingga
+hasil ini lebih tepat digunakan sebagai indikator untuk pemeriksaan lebih lanjut.
+
+\subsubsection{Hasil Query Revenue Leakage}
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Revenue Leakage pada Musim Sibuk}
+\label{tab:hasil-bq3}
+\begin{tabular}{|l|r|r|r|r|}
+\hline
+\textbf{Rute} & \textbf{Refund} & \textbf{Rebooking} &
+\textbf{Kompensasi} & \textbf{Total} \\
+\hline
+Salatiga--Jepara & 25.564.000 & 16.464.000 & 14.625.000 & 56.653.000 \\
+Tegal--Purwokerto & 22.446.000 & 14.507.000 & 12.625.000 & 49.578.000 \\
+Pati--Jakarta & 21.594.000 & 14.090.000 & 8.600.000 & 44.284.000 \\
+Surabaya--Malang & 16.696.000 & 10.728.000 & 5.475.000 & 32.899.000 \\
+Banyuwangi--Cilacap & 15.148.000 & 9.748.000 & 6.350.000 & 31.246.000 \\
+\hline
+\end{tabular}
+\end{table}
+
+Rute Salatiga--Jepara mencatat revenue leakage terbesar pada musim sibuk dalam
+data mart. Nilai ini berasal dari penjumlahan tiga komponen biaya pada klaim
+approved dan belum memasukkan satu klaim yang berada pada file karantina.
+
+\subsubsection{Hasil Query Berdasarkan Loyalty Tier}
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Perbandingan Aktivitas Berdasarkan Loyalty Tier}
+\label{tab:hasil-bq4}
+\begin{tabular}{|l|r|r|r|r|r|r|}
+\hline
+\textbf{Tier} & \textbf{Booking} & \textbf{Penumpang} & \textbf{Frekuensi} &
+\textbf{Avg. Revenue} & \textbf{Earned} & \textbf{Redeemed} \\
+\hline
+Basic & 8.254 & 2.749 & 3,00 & 196.054,71 & 357.627 & 17.800 \\
+Platinum & 909 & 314 & 2,89 & 200.506,25 & 40.957 & 2.090 \\
+Gold & 3.347 & 1.275 & 2,63 & 197.551,65 & 146.961 & 7.790 \\
+\hline
+\end{tabular}
+\end{table}
+
+Tier Basic memiliki jumlah booking dan penumpang terbesar karena proporsinya
+memang paling besar pada generator. Pendapatan kotor rata-rata per leg tertinggi
+terdapat pada tier Platinum, sedangkan rata-rata frekuensi booking antartier
+berada pada rentang 2,63 sampai 3,00.
+
+\subsubsection{Hasil Query Missed Connection dan Repeat Booking}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Perbandingan Repeat Booking Berdasarkan Riwayat Gangguan}
+\label{tab:hasil-bq5}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\textbf{Kelompok} & \textbf{Penumpang} & \textbf{Avg. Booking} &
+\textbf{Repeat Rate (\%)} \\
+\hline
+Pernah missed connection & 2.021 & 3,82 & 94,85 \\
+Tidak pernah missed connection & 1.790 & 2,68 & 76,54 \\
+\hline
+\end{tabular}
+\end{table}
+
+Pada dataset sintetis, penumpang yang pernah mengalami missed connection justru
+memiliki repeat booking rate lebih tinggi. Hasil tersebut tidak mendukung dugaan
+asosiasi negatif pada business question. Salah satu kemungkinan penjelasan adalah
+exposure: penumpang dengan lebih banyak booking memiliki lebih banyak kesempatan
+mengalami gangguan. Analisis ini bersifat deskriptif dan tidak menunjukkan hubungan
+sebab-akibat.
+
 \subsection{Data Quality Check}
-\subsubsection{Pemeriksaan Duplikat}
-\subsubsection{Pemeriksaan Nilai Null}
-\subsubsection{Pemeriksaan Konsistensi Referensial}
+
+Pemeriksaan kualitas mencakup duplikasi surrogate key, orphan foreign key,
+unexpected null pada kolom wajib, saldo loyalitas negatif, kapasitas historis,
+versi aktif SCD, dan rekonsiliasi baris karantina.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Hasil Data Quality Check}
+\label{tab:hasil-dq}
+\begin{tabular}{|p{0.68\textwidth}|r|}
+\hline
+\textbf{Pemeriksaan} & \textbf{Jumlah masalah} \\
+\hline
+Duplicate \texttt{ticket\_sales\_sk} & 0 \\
+Duplicate \texttt{itinerary\_leg\_sk} & 0 \\
+Duplicate \texttt{loyalty\_transaction\_sk} & 0 \\
+Orphan foreign key pada fact penjualan & 0 \\
+Orphan foreign key pada fact perjalanan & 0 \\
+Orphan foreign key pada fact loyalitas & 0 \\
+Saldo loyalitas negatif & 0 \\
+Unexpected null pada kolom wajib fact & 0 \\
+Trip melebihi kapasitas historis & 0 \\
+Lebih dari satu versi penumpang aktif & 0 \\
+Selisih rekonsiliasi itinerary & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+Seluruh pemeriksaan menghasilkan nol masalah. Hal ini berlaku setelah 20 baris
+yang melampaui kapasitas dipisahkan ke file karantina. Rekonsiliasi tetap dapat
+dilacak karena 24.980 baris fact perjalanan ditambah 20 baris karantina sama
+dengan 25.000 baris sumber.
 
 \section{Kesimpulan dan Refleksi}
 \subsection{Kesimpulan}
+
+Proyek ini menghasilkan data mart untuk tiga proses bisnis, yaitu penjualan
+tiket, pelaksanaan perjalanan per leg, dan transaksi loyalitas. Ketiga fact table
+menggunakan dimensi bersama sehingga transaksi dapat dianalisis berdasarkan
+penumpang, tanggal, rute, terminal, dan armada yang konsisten. Lima query dapat
+dijalankan terhadap hasil ETL dan seluruh data quality check menghasilkan nol
+masalah setelah proses karantina diterapkan.
+
+Hasil query memperlihatkan pasangan rute dengan missed connection tinggi, variasi
+delay dan pelanggaran SLA antararmada, serta perbedaan revenue leakage pada musim
+sibuk. Perbandingan loyalitas tidak menunjukkan asosiasi negatif antara missed
+connection dan repeat booking pada data sintetis. Temuan tersebut perlu dibaca
+sebagai karakteristik dataset yang dibangkitkan, bukan gambaran operator nyata.
+
 \subsection{Tantangan yang Dihadapi}
+
+Tantangan pertama adalah menjaga grain ketika delay pada satu trip muncul pada
+banyak baris penumpang. Query operasional harus meringkas data per trip sebelum
+menghitung rata-rata delay. Tantangan kedua adalah memilih versi dimensi SCD yang
+berlaku pada tanggal transaksi. Fact table tidak cukup dihubungkan ke versi
+dimensi terkini karena cara tersebut akan mengubah konteks historis.
+
+Validasi juga menemukan tiga trip yang melampaui kapasitas armada historis.
+Masalah tersebut tidak diselesaikan dengan mengubah raw data. Sebanyak 20 baris
+dipisahkan ke karantina dan tetap disertakan dalam rekonsiliasi. Pendekatan ini
+menjaga jejak antara data sumber, baris yang dimuat, dan baris yang ditolak.
+
 \subsection{Keputusan Desain Utama}
+
+Tiga keputusan desain yang digunakan adalah memisahkan proses bisnis ke dalam
+tiga fact table, mempertahankan grain atomik per tiket-leg, dan menerapkan SCD
+Tipe 2 pada atribut yang memerlukan histori. Data mart disimpan sebagai CSV agar
+tidak bergantung pada database tertentu. \texttt{schema.sql} digunakan untuk
+mendokumentasikan struktur dan SQLite in-memory digunakan hanya untuk verifikasi
+query.
+
 \subsection{Kesiapan Data Mart untuk Visualisasi}
 
+CSV fact dan dimension table dapat dibaca langsung oleh Tableau dan pandas.
+Surrogate key telah tersedia untuk membentuk relationship antara fact dan
+dimension table. Data dictionary juga mencatat tipe dan arti setiap kolom.
+Dengan demikian, data mart telah siap digunakan sebagai sumber tahap visualisasi,
+sedangkan pengujian koneksi dan pembuatan dashboard masih perlu dilakukan pada
+Tugas BI.
+
 \section{Referensi}
+
+\begin{enumerate}
+    \item Kimball, R. dan Ross, M. (2013). \textit{The Data Warehouse Toolkit:
+    The Definitive Guide to Dimensional Modeling}, edisi ketiga. Wiley.
+    \item Mustofa, K. (2026). \textit{Pengantar Warehouse};
+    \textit{Pengembangan Data Warehouse}; dan \textit{Extract, Transform, and
+    Load}. Materi perkuliahan Data Warehouse \& Business Intelligence.
+    \item Python Software Foundation. \textit{Python Documentation}:
+    \url{https://docs.python.org/3/}.
+    \item pandas development team. \textit{pandas Documentation}:
+    \url{https://pandas.pydata.org/docs/}.
+    \item Faker contributors. \textit{Faker Documentation}:
+    \url{https://faker.readthedocs.io/}.
+    \item SQLite Consortium. \textit{SQLite Documentation}:
+    \url{https://www.sqlite.org/docs.html}.
+\end{enumerate}
