@@ -59,7 +59,7 @@
 \newcommand{\tebalhijau}[1]{{\bfseries\color{ag} #1}}
 
 %$$$$$$$$$$$$$$$$
-\title[Data Mart Bus Antarkota]{Pembentukan Data Mart Perjalanan Bus Antarkota}
+\title[Data Mart Bus Antarkota]{Data Mart dan Visualisasi Perjalanan Bus Antarkota}
 \subtitle{Perjalanan Multi-Leg dan Loyalitas Penumpang}
 \date{}
 \author[Citra dan Ade]{Citra Putri Saragih \\ Ade Dwi Putra}
@@ -386,6 +386,36 @@ seluruhnya menghasilkan\\[0.2cm]
 \end{columns}
 \end{frame}
 
+\section{Visualisasi Tableau}
+
+\begin{frame}{Kinerja Operasional dan Dampak Finansial}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/dashboard-operasional.png}
+
+\scriptsize Terminal Salatiga memiliki \textit{missed connection rate} tertinggi
+(93,45\%), sedangkan \textit{revenue leakage} terbesar terdapat pada rute
+Salatiga--Jepara (Rp56.653.000).
+\end{frame}
+
+\begin{frame}{Loyalitas dan Perilaku Penumpang}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/dashboard-perilaku-loyalitas.png}
+
+\scriptsize Tier Basic mencatat jumlah tiket terbesar, sedangkan Platinum memiliki
+rata-rata pendapatan tiket tertinggi sebesar Rp222.565.
+\end{frame}
+
+\begin{frame}{Aktivitas Transaksi Loyalitas}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.72\textheight,keepaspectratio]
+{figures/dashboard-transaksi-loyalitas.png}
+
+\scriptsize Terdapat 12.510 transaksi \texttt{EARN} dan 1.418 transaksi
+\texttt{REDEEM}. Aktivitas meningkat pada Juni serta November--Desember.
+\end{frame}
+
 \section{Penutup}
 
 \begin{frame}{Kesimpulan}
@@ -399,7 +429,8 @@ seluruhnya menghasilkan\\[0.2cm]
     integritas referensial.
     \item Lima query menjawab pertanyaan bisnis, tetapi hasil asosiasi perlu
     ditafsirkan dengan memperhatikan frekuensi perjalanan.
-    \item Data mart siap menjadi sumber data Tableau pada Tugas BI berikutnya.
+    \item Tiga dashboard Tableau menunjukkan bahwa seluruh fact table dapat
+    digunakan untuk analisis operasional, komersial, dan loyalitas.
 \end{itemize}
 \end{frame}
 
