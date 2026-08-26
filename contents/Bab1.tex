@@ -563,12 +563,109 @@ Relasi antarsumber masih menggunakan natural key, misalnya
 ETL ketika dimension table dan fact table dibangun.
 
 \section{Data Mart}
-\subsection{Arsitektur dan Pipeline ETL/ELT}
 \subsection{Skema Final Data Mart}
+
+Pipeline ETL diimplementasikan pada \texttt{data-mart/etl.py}. Skrip tersebut
+membaca seluruh CSV pada \texttt{synthetic-data-generation/data/raw}, membentuk
+surrogate key, menentukan versi dimensi SCD yang berlaku pada tanggal kejadian,
+dan menulis hasil akhir sebagai CSV. Keluaran dipisahkan ke dalam direktori
+\texttt{dimensions}, \texttt{facts}, dan \texttt{rejected}.
+
+Data mart menggunakan fact constellation yang terdiri atas tiga fact table dan
+sepuluh dimension table. Jumlah baris setiap tabel ditunjukkan pada
+Tabel~\ref{tab:tabel-final-data-mart}.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Tabel Final Data Mart}
+\label{tab:tabel-final-data-mart}
+\begin{tabular}{|l|r|l|r|}
+\hline
+\textbf{Tabel} & \textbf{Baris} & \textbf{Tabel} & \textbf{Baris} \\
+\hline
+\texttt{dim\_date} & 385 & \texttt{dim\_sales\_context} & 48 \\
+\texttt{dim\_time} & 1.440 & \texttt{dim\_promotion} & 4 \\
+\texttt{dim\_passenger} & 4.941 & \texttt{dim\_disruption\_reason} & 7 \\
+\texttt{dim\_terminal} & 30 & \texttt{dim\_loyalty\_transaction\_type} & 2 \\
+\texttt{dim\_route} & 30 & \texttt{fct\_ticket\_sales} & 25.000 \\
+\texttt{dim\_bus\_fleet} & 92 & \texttt{fct\_passenger\_itinerary\_leg} & 24.980 \\
+& & \texttt{fct\_loyalty\_transaction} & 13.928 \\
+\hline
+\end{tabular}
+\end{table}
+
+\texttt{dim\_passenger}, \texttt{dim\_bus\_fleet}, dan
+\texttt{dim\_terminal} menerapkan SCD Tipe 2. Foreign key pada fact table
+ditentukan dengan pencarian versi dimensi berdasarkan tanggal transaksi atau
+perjalanan. Dengan cara ini, perubahan tingkat loyalitas, kelas armada, dan
+kapasitas terminal tidak mengubah hasil analisis periode sebelumnya.
+
 \subsection{Dokumentasi Tabel dan Kolom}
-\subsection{Konsistensi Referensial}
+
+Dokumentasi tipe data, primary key, dan foreign key tersedia pada
+\texttt{data-mart/schema.sql}. Deskripsi setiap tabel dan kolom tersedia pada
+\texttt{data-mart/data\_dictionary.csv}. Ringkasan grain dan kolom utama fact
+table adalah sebagai berikut:
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Grain dan Kolom Utama Fact Table Final}
+\begin{tabular}{|p{0.25\textwidth}|p{0.30\textwidth}|p{0.35\textwidth}|}
+\hline
+\textbf{Fact table} & \textbf{Grain} & \textbf{Kolom utama} \\
+\hline
+\texttt{fct\_ticket\_sales} & Satu tiket penumpang pada satu itinerary leg &
+Surrogate key penumpang, tanggal, waktu, rute, konteks penjualan, promosi,
+tarif, diskon, pajak, pendapatan, dan poin \\
+\hline
+\texttt{fct\_passenger\_itinerary\_leg} & Satu penumpang pada satu leg dalam
+satu trip terjadwal & Surrogate key penumpang, rute, armada, terminal, waktu
+terjadwal dan aktual, delay, gagal koneksi, refund, rebooking, dan kompensasi \\
+\hline
+\texttt{fct\_loyalty\_transaction} & Satu mutasi poin milik satu penumpang &
+Surrogate key penumpang, tanggal, waktu, jenis transaksi, perubahan poin, dan
+saldo setelah transaksi \\
+\hline
+\end{tabular}
+\end{table}
+
+Pada tahap validasi ditemukan tiga trip yang jumlah tiketnya melebihi kapasitas
+armada berdasarkan versi SCD yang berlaku. Raw data tidak diubah. ETL mengurutkan
+tiket berdasarkan waktu pemesanan, memuat penumpang sampai batas kapasitas, dan
+menempatkan sisanya pada \texttt{rejected\_itinerary\_legs.csv} dengan alasan
+\texttt{TRIP\_CAPACITY\_EXCEEDED}.
+
+Sebanyak 20 baris masuk karantina. Rekonsiliasinya adalah 25.000 baris sumber,
+24.980 baris dimuat ke \texttt{fct\_passenger\_itinerary\_leg}, dan 20 baris
+disimpan sebagai rejected record. Seluruh 25.000 transaksi tetap dimuat ke
+\texttt{fct\_ticket\_sales} karena transaksi penjualannya tetap terjadi.
+Satu tiket karantina mempunyai klaim berstatus approved. ID klaim dan nilai
+refund, kompensasi, serta rebooking tetap disimpan pada file karantina, tetapi
+tidak dimasukkan dalam perhitungan measure pada fact perjalanan.
+Pemeriksaan setelah ETL tidak menemukan orphan foreign key pada ketiga fact
+table. Jumlah baris dan checksum setiap keluaran dicatat pada
+\texttt{data-mart/output/manifest.json}.
+
 \subsection{Koneksi ke BI Tools}
+
+Keluaran data mart berupa CSV agar dapat digunakan tanpa bergantung pada satu
+database. Pada Tableau, setiap fact table dapat dijadikan pusat satu data source,
+kemudian dihubungkan dengan dimension table menggunakan kolom surrogate key
+berakhiran \texttt{\_sk}. Relationship digunakan agar grain setiap tabel tetap
+dipertahankan.
+
+CSV yang sama dapat digunakan pada visualisasi berbasis Python dengan pandas.
+Dengan demikian, Tableau dan Python membaca hasil ETL yang sama. Koneksi aktual
+dan rancangan dashboard akan dikerjakan pada tahap visualisasi.
+
 \subsection{Semantic Layer}
+
+Belum ada semantic layer yang disimpan sebagai komponen terpisah. Definisi metrik
+bisnis diterapkan secara konsisten pada query verifikasi dan alat visualisasi.
+Metrik tersebut meliputi pendapatan tiket, missed connection rate, SLA breach
+rate, dan revenue leakage.
 
 \section{Verifikasi dan Validasi}
 \subsection{Query Analitik}

@@ -1,0 +1,149 @@
+table_name,column_name,data_type,key_type,nullable,description
+dim_date,date_sk,INTEGER,PK,Tidak,Kunci tanggal dengan format YYYYMMDD
+dim_date,full_date,DATE,Atribut,Tidak,Tanggal kalender
+dim_date,day_of_month,INTEGER,Atribut,Tidak,Nomor hari dalam bulan
+dim_date,day_name,VARCHAR(10),Atribut,Tidak,Nama hari
+dim_date,week_of_year,INTEGER,Atribut,Tidak,Nomor minggu dalam tahun
+dim_date,month_number,INTEGER,Atribut,Tidak,Nomor bulan
+dim_date,month_name,VARCHAR(10),Atribut,Tidak,Nama bulan
+dim_date,quarter_number,INTEGER,Atribut,Tidak,Nomor kuartal
+dim_date,year_number,INTEGER,Atribut,Tidak,Tahun kalender
+dim_date,is_weekend,BOOLEAN,Atribut,Tidak,Penanda hari Sabtu atau Minggu
+dim_date,is_peak_season,BOOLEAN,Atribut,Tidak,Penanda bulan musim sibuk
+dim_time,time_sk,INTEGER,PK,Tidak,Kunci waktu dengan format HHMM
+dim_time,full_time,TIME,Atribut,Tidak,Waktu dalam format jam menit detik
+dim_time,hour_number,INTEGER,Atribut,Tidak,Komponen jam
+dim_time,minute_number,INTEGER,Atribut,Tidak,Komponen menit
+dim_time,time_period,VARCHAR(10),Atribut,Tidak,Kelompok waktu pagi siang sore atau malam
+dim_time,is_peak_hour,BOOLEAN,Atribut,Tidak,Penanda jam sibuk
+dim_passenger,passenger_sk,INTEGER,PK,Tidak,Surrogate key versi penumpang
+dim_passenger,passenger_id,VARCHAR(10),Natural Key,Tidak,ID penumpang dari sistem sumber
+dim_passenger,passenger_name,VARCHAR(100),Atribut,Tidak,Nama penumpang
+dim_passenger,email,VARCHAR(150),Atribut,Ya,Alamat email penumpang
+dim_passenger,phone,VARCHAR(30),Atribut,Tidak,Nomor telepon penumpang
+dim_passenger,city,VARCHAR(100),Atribut,Tidak,Kota domisili penumpang
+dim_passenger,registration_date,DATE,Atribut,Tidak,Tanggal pendaftaran penumpang
+dim_passenger,loyalty_tier,VARCHAR(20),Atribut SCD 2,Tidak,Tingkat loyalitas pada periode versi
+dim_passenger,effective_start_date,DATE,Kontrol SCD 2,Tidak,Tanggal mulai berlakunya versi
+dim_passenger,effective_end_date,DATE,Kontrol SCD 2,Ya,Tanggal akhir versi secara eksklusif
+dim_passenger,is_current,BOOLEAN,Kontrol SCD 2,Tidak,Penanda versi yang sedang berlaku
+dim_terminal,terminal_sk,INTEGER,PK,Tidak,Surrogate key versi terminal
+dim_terminal,terminal_id,VARCHAR(10),Natural Key,Tidak,ID terminal dari sistem sumber
+dim_terminal,terminal_name,VARCHAR(100),Atribut,Tidak,Nama terminal
+dim_terminal,city,VARCHAR(100),Atribut,Tidak,Kota tempat terminal berada
+dim_terminal,province,VARCHAR(100),Atribut,Tidak,Provinsi tempat terminal berada
+dim_terminal,capacity_per_day,INTEGER,Atribut SCD 2,Tidak,Kapasitas layanan terminal per hari
+dim_terminal,effective_start_date,DATE,Kontrol SCD 2,Tidak,Tanggal mulai berlakunya versi
+dim_terminal,effective_end_date,DATE,Kontrol SCD 2,Ya,Tanggal akhir versi secara eksklusif
+dim_terminal,is_current,BOOLEAN,Kontrol SCD 2,Tidak,Penanda versi yang sedang berlaku
+dim_route,route_sk,INTEGER,PK,Tidak,Surrogate key rute
+dim_route,route_id,VARCHAR(10),Natural Key,Tidak,ID rute dari sistem sumber
+dim_route,route_name,VARCHAR(150),Atribut,Tidak,Nama rute asal dan tujuan
+dim_route,origin_terminal_id,VARCHAR(10),Atribut,Tidak,ID terminal asal pada data sumber
+dim_route,destination_terminal_id,VARCHAR(10),Atribut,Tidak,ID terminal tujuan pada data sumber
+dim_route,distance_km,INTEGER,Atribut,Tidak,Jarak rute dalam kilometer
+dim_route,average_travel_minutes,INTEGER,Atribut,Tidak,Estimasi durasi perjalanan dalam menit
+dim_bus_fleet,bus_fleet_sk,INTEGER,PK,Tidak,Surrogate key versi armada
+dim_bus_fleet,bus_fleet_id,VARCHAR(10),Natural Key,Tidak,ID armada dari sistem sumber
+dim_bus_fleet,license_plate,VARCHAR(20),Atribut,Tidak,Nomor pelat armada
+dim_bus_fleet,bus_class,VARCHAR(20),Atribut SCD 2,Tidak,Kelas layanan armada pada periode versi
+dim_bus_fleet,seat_configuration,VARCHAR(10),Atribut SCD 2,Tidak,Susunan kursi armada pada periode versi
+dim_bus_fleet,seat_capacity,INTEGER,Atribut SCD 2,Tidak,Jumlah kursi armada pada periode versi
+dim_bus_fleet,manufacture_year,INTEGER,Atribut,Tidak,Tahun produksi armada
+dim_bus_fleet,status,VARCHAR(20),Atribut,Tidak,Status operasional armada
+dim_bus_fleet,effective_start_date,DATE,Kontrol SCD 2,Tidak,Tanggal mulai berlakunya versi
+dim_bus_fleet,effective_end_date,DATE,Kontrol SCD 2,Ya,Tanggal akhir versi secara eksklusif
+dim_bus_fleet,is_current,BOOLEAN,Kontrol SCD 2,Tidak,Penanda versi yang sedang berlaku
+dim_sales_context,sales_context_sk,INTEGER,PK,Tidak,Surrogate key kombinasi konteks penjualan
+dim_sales_context,booking_channel,VARCHAR(30),Atribut,Tidak,Kanal yang digunakan untuk memesan tiket
+dim_sales_context,fare_class,VARCHAR(20),Atribut,Tidak,Kelas tarif tiket
+dim_sales_context,payment_method,VARCHAR(30),Atribut,Tidak,Metode pembayaran pemesanan
+dim_sales_context,is_refundable,BOOLEAN,Atribut,Tidak,Penanda tiket dapat dikembalikan
+dim_promotion,promotion_sk,INTEGER,PK,Tidak,Surrogate key promosi
+dim_promotion,promotion_code,VARCHAR(20),Natural Key,Ya,Kode promosi dari sistem sumber
+dim_promotion,promotion_name,VARCHAR(100),Atribut,Tidak,Nama promosi
+dim_promotion,promotion_type,VARCHAR(30),Atribut,Tidak,Jenis perhitungan promosi
+dim_promotion,discount_rate,"DECIMAL(5,4)",Atribut,Tidak,Tingkat diskon promosi
+dim_disruption_reason,disruption_reason_sk,INTEGER,PK,Tidak,Surrogate key alasan gangguan
+dim_disruption_reason,disruption_reason,VARCHAR(50),Atribut,Ya,Kategori penyebab gangguan perjalanan
+dim_disruption_reason,severity_level,VARCHAR(20),Atribut,Ya,Tingkat keparahan gangguan
+dim_loyalty_transaction_type,loyalty_transaction_type_sk,INTEGER,PK,Tidak,Surrogate key jenis transaksi loyalitas
+dim_loyalty_transaction_type,transaction_type,VARCHAR(20),Natural Key,Tidak,Jenis mutasi poin loyalitas
+fct_ticket_sales,ticket_sales_sk,INTEGER,PK,Tidak,Surrogate key transaksi penjualan tiket
+fct_ticket_sales,passenger_sk,INTEGER,FK,Tidak,Versi penumpang yang berlaku saat pemesanan
+fct_ticket_sales,booking_date_sk,INTEGER,FK,Tidak,Tanggal pemesanan tiket
+fct_ticket_sales,booking_time_sk,INTEGER,FK,Tidak,Waktu pemesanan tiket
+fct_ticket_sales,route_sk,INTEGER,FK,Tidak,Rute pada tiket leg
+fct_ticket_sales,sales_context_sk,INTEGER,FK,Tidak,Konteks penjualan tiket
+fct_ticket_sales,promotion_sk,INTEGER,FK,Tidak,Promosi yang digunakan atau tanpa promosi
+fct_ticket_sales,booking_id,VARCHAR(20),Degenerate Dimension,Tidak,ID pemesanan dari sistem sumber
+fct_ticket_sales,ticket_number,VARCHAR(20),Degenerate Dimension,Tidak,Nomor tiket dari sistem sumber
+fct_ticket_sales,itinerary_id,VARCHAR(20),Degenerate Dimension,Tidak,ID rangkaian perjalanan
+fct_ticket_sales,allocated_base_fare,"DECIMAL(15,2)",Measure,Tidak,Tarif dasar yang dialokasikan untuk satu leg
+fct_ticket_sales,discount_amount,"DECIMAL(15,2)",Measure,Tidak,Nilai potongan harga pada satu leg
+fct_ticket_sales,tax_amount,"DECIMAL(15,2)",Measure,Tidak,Nilai pajak pada satu leg
+fct_ticket_sales,net_ticket_revenue,"DECIMAL(15,2)",Measure,Tidak,Tarif dasar dikurangi diskon dan ditambah pajak
+fct_ticket_sales,loyalty_points_earned,INTEGER,Measure,Tidak,Poin yang diperoleh dari pembelian
+fct_ticket_sales,loyalty_points_redeemed,INTEGER,Measure,Tidak,Poin yang digunakan pada pembelian
+fct_passenger_itinerary_leg,itinerary_leg_sk,INTEGER,PK,Tidak,Surrogate key perjalanan penumpang per leg
+fct_passenger_itinerary_leg,passenger_sk,INTEGER,FK,Tidak,Versi penumpang pada tanggal perjalanan
+fct_passenger_itinerary_leg,route_sk,INTEGER,FK,Tidak,Rute perjalanan pada leg
+fct_passenger_itinerary_leg,bus_fleet_sk,INTEGER,FK,Tidak,Versi armada pada tanggal perjalanan
+fct_passenger_itinerary_leg,origin_terminal_sk,INTEGER,FK,Tidak,Versi terminal asal pada tanggal perjalanan
+fct_passenger_itinerary_leg,destination_terminal_sk,INTEGER,FK,Tidak,Versi terminal tujuan pada tanggal perjalanan
+fct_passenger_itinerary_leg,disruption_reason_sk,INTEGER,FK,Tidak,Alasan gangguan atau tanpa gangguan
+fct_passenger_itinerary_leg,booking_date_sk,INTEGER,FK,Tidak,Tanggal pemesanan
+fct_passenger_itinerary_leg,booking_time_sk,INTEGER,FK,Tidak,Waktu pemesanan
+fct_passenger_itinerary_leg,scheduled_departure_date_sk,INTEGER,FK,Tidak,Tanggal keberangkatan terjadwal
+fct_passenger_itinerary_leg,scheduled_departure_time_sk,INTEGER,FK,Tidak,Waktu keberangkatan terjadwal
+fct_passenger_itinerary_leg,actual_departure_date_sk,INTEGER,FK,Tidak,Tanggal keberangkatan aktual
+fct_passenger_itinerary_leg,actual_departure_time_sk,INTEGER,FK,Tidak,Waktu keberangkatan aktual
+fct_passenger_itinerary_leg,scheduled_arrival_date_sk,INTEGER,FK,Tidak,Tanggal kedatangan terjadwal
+fct_passenger_itinerary_leg,scheduled_arrival_time_sk,INTEGER,FK,Tidak,Waktu kedatangan terjadwal
+fct_passenger_itinerary_leg,actual_arrival_date_sk,INTEGER,FK,Tidak,Tanggal kedatangan aktual
+fct_passenger_itinerary_leg,actual_arrival_time_sk,INTEGER,FK,Tidak,Waktu kedatangan aktual
+fct_passenger_itinerary_leg,rebooking_date_sk,INTEGER,FK,Ya,Tanggal pemesanan ulang setelah gangguan
+fct_passenger_itinerary_leg,rebooking_time_sk,INTEGER,FK,Ya,Waktu pemesanan ulang setelah gangguan
+fct_passenger_itinerary_leg,claim_resolution_date_sk,INTEGER,FK,Ya,Tanggal penyelesaian klaim
+fct_passenger_itinerary_leg,claim_resolution_time_sk,INTEGER,FK,Ya,Waktu penyelesaian klaim
+fct_passenger_itinerary_leg,booking_id,VARCHAR(20),Degenerate Dimension,Tidak,ID pemesanan dari sistem sumber
+fct_passenger_itinerary_leg,ticket_number,VARCHAR(20),Degenerate Dimension,Tidak,Nomor tiket dari sistem sumber
+fct_passenger_itinerary_leg,itinerary_id,VARCHAR(20),Degenerate Dimension,Tidak,ID rangkaian perjalanan
+fct_passenger_itinerary_leg,trip_id,VARCHAR(20),Degenerate Dimension,Tidak,ID perjalanan bus terjadwal
+fct_passenger_itinerary_leg,leg_sequence,INTEGER,Atribut Fact,Tidak,Urutan leg dalam satu itinerary
+fct_passenger_itinerary_leg,total_legs,INTEGER,Atribut Fact,Tidak,Jumlah leg dalam satu itinerary
+fct_passenger_itinerary_leg,claim_id,VARCHAR(20),Degenerate Dimension,Ya,ID klaim akibat gangguan
+fct_passenger_itinerary_leg,travel_status,VARCHAR(40),Atribut Fact,Tidak,Status pelaksanaan perjalanan penumpang
+fct_passenger_itinerary_leg,claim_status,VARCHAR(20),Atribut Fact,Ya,Status pemrosesan klaim
+fct_passenger_itinerary_leg,departure_delay_minutes,INTEGER,Measure,Tidak,Keterlambatan keberangkatan dalam menit
+fct_passenger_itinerary_leg,arrival_delay_minutes,INTEGER,Measure,Tidak,Keterlambatan kedatangan dalam menit
+fct_passenger_itinerary_leg,scheduled_connection_minutes,INTEGER,Measure,Ya,Waktu transit terjadwal dalam menit
+fct_passenger_itinerary_leg,actual_connection_minutes,INTEGER,Measure,Ya,Waktu transit aktual dalam menit
+fct_passenger_itinerary_leg,missed_connection_count,INTEGER,Measure,Tidak,Nilai satu untuk gagal koneksi dan nol selainnya
+fct_passenger_itinerary_leg,rebooking_cost,"DECIMAL(15,2)",Measure,Tidak,Biaya pemesanan ulang akibat gangguan
+fct_passenger_itinerary_leg,refund_amount,"DECIMAL(15,2)",Measure,Tidak,Nilai pengembalian dana akibat gangguan
+fct_passenger_itinerary_leg,compensation_amount,"DECIMAL(15,2)",Measure,Tidak,Nilai kompensasi tunai akibat gangguan
+fct_loyalty_transaction,loyalty_transaction_sk,INTEGER,PK,Tidak,Surrogate key transaksi loyalitas
+fct_loyalty_transaction,passenger_sk,INTEGER,FK,Tidak,Versi penumpang pada tanggal transaksi poin
+fct_loyalty_transaction,transaction_date_sk,INTEGER,FK,Tidak,Tanggal transaksi poin
+fct_loyalty_transaction,transaction_time_sk,INTEGER,FK,Tidak,Waktu transaksi poin
+fct_loyalty_transaction,loyalty_transaction_type_sk,INTEGER,FK,Tidak,Jenis mutasi poin
+fct_loyalty_transaction,loyalty_transaction_id,VARCHAR(20),Degenerate Dimension,Tidak,ID transaksi loyalitas dari sistem sumber
+fct_loyalty_transaction,reference_id,VARCHAR(20),Degenerate Dimension,Tidak,ID transaksi yang menjadi referensi mutasi poin
+fct_loyalty_transaction,points_transacted,INTEGER,Measure,Tidak,Jumlah poin masuk atau keluar
+fct_loyalty_transaction,points_balance_after,INTEGER,Measure,Tidak,Saldo poin setelah transaksi
+rejected_itinerary_legs,ticket_number,VARCHAR(20),Natural Key,Tidak,Nomor tiket yang tidak dimuat ke fact perjalanan
+rejected_itinerary_legs,booking_id,VARCHAR(20),Natural Key,Tidak,ID pemesanan tiket
+rejected_itinerary_legs,itinerary_id,VARCHAR(20),Natural Key,Tidak,ID rangkaian perjalanan
+rejected_itinerary_legs,passenger_id,VARCHAR(10),Natural Key,Tidak,ID penumpang dari sistem sumber
+rejected_itinerary_legs,trip_id,VARCHAR(20),Natural Key,Tidak,ID perjalanan yang melebihi kapasitas
+rejected_itinerary_legs,bus_fleet_id,VARCHAR(10),Natural Key,Tidak,ID armada pada perjalanan
+rejected_itinerary_legs,scheduled_departure_ts,TIMESTAMP,Atribut,Tidak,Waktu keberangkatan terjadwal
+rejected_itinerary_legs,historical_seat_capacity,INTEGER,Atribut,Tidak,Kapasitas armada sesuai versi SCD
+rejected_itinerary_legs,passenger_sequence,INTEGER,Atribut,Tidak,Urutan penumpang berdasarkan waktu pemesanan
+rejected_itinerary_legs,rejection_reason,VARCHAR(50),Atribut,Tidak,Alasan baris tidak dimuat ke fact perjalanan
+rejected_itinerary_legs,claim_id,VARCHAR(20),Atribut,Ya,ID klaim yang terkait dengan tiket karantina
+rejected_itinerary_legs,claim_status,VARCHAR(20),Atribut,Ya,Status klaim yang terkait dengan tiket karantina
+rejected_itinerary_legs,refund_amount,"DECIMAL(15,2)",Atribut,Tidak,Nilai refund pada tiket karantina
+rejected_itinerary_legs,compensation_amount,"DECIMAL(15,2)",Atribut,Tidak,Nilai kompensasi pada tiket karantina
+rejected_itinerary_legs,rebooking_cost,"DECIMAL(15,2)",Atribut,Tidak,Biaya rebooking pada tiket karantina

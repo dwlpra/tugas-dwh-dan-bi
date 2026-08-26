@@ -1,0 +1,49 @@
+sales_context_sk,booking_channel,fare_class,payment_method,is_refundable
+1,Agent,Flexi,Bank Transfer,True
+2,Agent,Flexi,Card,True
+3,Agent,Flexi,Cash,True
+4,Agent,Flexi,E-Wallet,True
+5,Agent,Promo,Bank Transfer,False
+6,Agent,Promo,Card,False
+7,Agent,Promo,Cash,False
+8,Agent,Promo,E-Wallet,False
+9,Agent,Regular,Bank Transfer,True
+10,Agent,Regular,Card,True
+11,Agent,Regular,Cash,True
+12,Agent,Regular,E-Wallet,True
+13,Counter,Flexi,Bank Transfer,True
+14,Counter,Flexi,Card,True
+15,Counter,Flexi,Cash,True
+16,Counter,Flexi,E-Wallet,True
+17,Counter,Promo,Bank Transfer,False
+18,Counter,Promo,Card,False
+19,Counter,Promo,Cash,False
+20,Counter,Promo,E-Wallet,False
+21,Counter,Regular,Bank Transfer,True
+22,Counter,Regular,Card,True
+23,Counter,Regular,Cash,True
+24,Counter,Regular,E-Wallet,True
+25,Mobile App,Flexi,Bank Transfer,True
+26,Mobile App,Flexi,Card,True
+27,Mobile App,Flexi,Cash,True
+28,Mobile App,Flexi,E-Wallet,True
+29,Mobile App,Promo,Bank Transfer,False
+30,Mobile App,Promo,Card,False
+31,Mobile App,Promo,Cash,False
+32,Mobile App,Promo,E-Wallet,False
+33,Mobile App,Regular,Bank Transfer,True
+34,Mobile App,Regular,Card,True
+35,Mobile App,Regular,Cash,True
+36,Mobile App,Regular,E-Wallet,True
+37,Website,Flexi,Bank Transfer,True
+38,Website,Flexi,Card,True
+39,Website,Flexi,Cash,True
+40,Website,Flexi,E-Wallet,True
+41,Website,Promo,Bank Transfer,False
+42,Website,Promo,Card,False
+43,Website,Promo,Cash,False
+44,Website,Promo,E-Wallet,False
+45,Website,Regular,Bank Transfer,True
+46,Website,Regular,Card,True
+47,Website,Regular,Cash,True
+48,Website,Regular,E-Wallet,True

@@ -1,0 +1,5 @@
+promotion_sk,promotion_code,promotion_name,promotion_type,discount_rate
+0,,Tanpa Promosi,None,0
+1,APP5,Pemesanan Aplikasi,Percentage,0.05
+2,EARLY10,Pemesanan Awal,Percentage,0.1
+3,PEAK5,Promo Musim Sibuk,Percentage,0.05

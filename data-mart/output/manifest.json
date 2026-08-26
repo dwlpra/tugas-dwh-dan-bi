@@ -1,0 +1,66 @@
+{
+  "source_manifest_sha256": "ed3ece0558bfc3b415e74fc854b1cc17d066924ea2459ce5f1e015464c934296",
+  "files": {
+    "dimensions/dim_date.csv": {
+      "rows": 385,
+      "sha256": "33be864f6affff205e62c7c18a3980e2b04bda6373cf27b6e6c95248c6786633"
+    },
+    "dimensions/dim_time.csv": {
+      "rows": 1440,
+      "sha256": "ffa6968285d414a2a7e7d52d4db052282e9a77c24f9a78c3322d392afea4d440"
+    },
+    "dimensions/dim_passenger.csv": {
+      "rows": 4941,
+      "sha256": "8bbd1460eee52c2a4b24550b9cb4fd2543fff36b55e9c37a529e4cf5b7b1f89d"
+    },
+    "dimensions/dim_terminal.csv": {
+      "rows": 30,
+      "sha256": "4be3f4a14efd24692636df9c42c0bec40b0f4941e0961116181819c4478e8b12"
+    },
+    "dimensions/dim_route.csv": {
+      "rows": 30,
+      "sha256": "0c789add71ebf8084a4b6ebf80b66c3aa8e541ce96c6b13a9b9ffa932dfa318c"
+    },
+    "dimensions/dim_bus_fleet.csv": {
+      "rows": 92,
+      "sha256": "c51795c9f03e322485e1106830c71a312038cf1c9728e2a86b772c642743c22e"
+    },
+    "dimensions/dim_sales_context.csv": {
+      "rows": 48,
+      "sha256": "6876717f390503d61dffb3e69669df011737c505cbb6642c84b5f81fe6ad9cde"
+    },
+    "dimensions/dim_promotion.csv": {
+      "rows": 4,
+      "sha256": "83eba4eca92864317b93faf3ee4428a0b400482e7d6142c0996357f253c4bde8"
+    },
+    "dimensions/dim_disruption_reason.csv": {
+      "rows": 7,
+      "sha256": "39b6e5c0cd8290d4788005e827ec0075357840bac100596cea9ac2eba7b77629"
+    },
+    "dimensions/dim_loyalty_transaction_type.csv": {
+      "rows": 2,
+      "sha256": "c59443f0eaf6f8b53f2df410c83d5138fb2f5e2a42a3ab8f2e5160318e595349"
+    },
+    "facts/fct_ticket_sales.csv": {
+      "rows": 25000,
+      "sha256": "c1d28f13c3d79b403afc1ae457f7b076b7dd6713d137b189baf33de83506c58f"
+    },
+    "facts/fct_passenger_itinerary_leg.csv": {
+      "rows": 24980,
+      "sha256": "9de5ac2f9b50d8b3d78d29b0060c94b1407fc1931d8c22dea1bd22d2d6204beb"
+    },
+    "facts/fct_loyalty_transaction.csv": {
+      "rows": 13928,
+      "sha256": "ad7b9406733be1fb7bf245c12aabe4729c9386ad103c4dbe9e00cc168057a8d4"
+    },
+    "rejected/rejected_itinerary_legs.csv": {
+      "rows": 20,
+      "sha256": "b4aa76d9f929875c6f0b080da6eec86645e51a6b169de4931a73a7cf1fb59019"
+    }
+  },
+  "reconciliation": {
+    "raw_ticket_legs": 25000,
+    "loaded_itinerary_legs": 24980,
+    "rejected_itinerary_legs": 20
+  }
+}

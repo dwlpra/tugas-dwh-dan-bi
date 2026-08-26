@@ -1,0 +1,8 @@
+disruption_reason_sk,disruption_reason,severity_level
+0,,
+1,Cuaca,High
+2,Cuaca,Medium
+3,Kemacetan,High
+4,Kemacetan,Medium
+5,Kerusakan Mesin,High
+6,Kerusakan Mesin,Medium
