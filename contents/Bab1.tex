@@ -353,7 +353,7 @@ koreksi administratif.
     \item Koreksi salah ketik pada \texttt{dim\_bus\_fleet.license\_plate}
     menggunakan SCD Tipe 1. Perubahan pelat yang benar-benar terjadi secara
     operasional diperlakukan sebagai perubahan historis.
-    \item \texttt{dim\_terminal.capacity} menggunakan SCD Tipe 2 jika perubahan
+    \item \texttt{dim\_terminal.capacity\_per\_day} menggunakan SCD Tipe 2 jika perubahan
     kapasitas diperlukan dalam analisis historis, sedangkan koreksi nama terminal
     menggunakan SCD Tipe 1.
 \end{itemize}
@@ -372,24 +372,34 @@ star schema yang saling berhubungan melalui \texttt{dim\_passenger},
 \texttt{dim\_date}, dan \texttt{dim\_time}. Selain itu, \texttt{dim\_route}
 digunakan bersama oleh fact penjualan tiket dan fact perjalanan penumpang.
 Hubungan antartabel pada tingkat konseptual ditunjukkan pada
-Gambar~\ref{fig:dimensional-model}.
+Gambar~\ref{fig:dimensional-model-conceptual}. Versi ini hanya menampilkan fact
+table, dimension table, dan hubungan antartabel agar struktur keseluruhan lebih
+mudah dibaca.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/dimensional_model.png}
     \caption{Fact constellation perjalanan bus antarkota multi-leg dan loyalitas
-    penumpang}
-    \label{fig:dimensional-model}
+    penumpang pada tingkat konseptual}
+    \label{fig:dimensional-model-conceptual}
 \end{figure}
 
 \subsubsection{Relasi dan Tipe Data Utama}
 
-Diagram final perlu mencantumkan primary key, foreign key, dan tipe data utama pada
-setiap tabel. Surrogate key direncanakan menggunakan tipe integer, nilai finansial
-menggunakan decimal, jumlah poin dan durasi menggunakan integer, tanggal menggunakan
-date, serta waktu kejadian menggunakan timestamp atau pasangan date key dan time key.
-Detail ini akan disesuaikan kembali dengan teknologi penyimpanan yang digunakan pada
-tahap pembangunan data mart.
+Rincian kolom dan tipe data ditunjukkan pada
+Gambar~\ref{fig:dimensional-model-full}. Diagram tersebut mencantumkan primary key,
+foreign key, dan tipe data utama pada setiap tabel. Surrogate key menggunakan tipe
+integer, nilai finansial menggunakan decimal, jumlah poin dan durasi menggunakan
+integer, sedangkan tanggal dan waktu dihubungkan melalui pasangan date key dan time
+key. Dimensi tanggal, waktu, penumpang, dan rute digunakan oleh lebih dari satu fact
+table sebagai conformed dimensions.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dimension_full.drawio.png}
+    \caption{Fact constellation beserta kolom dan tipe data utama}
+    \label{fig:dimensional-model-full}
+\end{figure}
 
 \section{Synthetic Data Generation}
 \subsection{Strategi Pembuatan Data Sintetis}
